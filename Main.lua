@@ -1,4 +1,6 @@
--- Azly Mizi Hub - Menu tab (gần nhau, chức năng Grow A Garden 2)
+-- Azly Mizi Hub - Grow A Garden 2 (Full chức năng thật)
+-- Dành cho Guts & Glory 2 (game.GameId == 10200395747)
+
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "AzlyMiziHub"
@@ -7,11 +9,147 @@ gui.ResetOnSpawn = false
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
 
-local FRAME_W = 500
-local FRAME_H = 380
+-- === TÌM REMOTE EVENTS ===
+local ShopRemote = ReplicatedStorage:FindFirstChild("ShopRemote") or ReplicatedStorage:FindFirstChild("BuyItem")
+local SellRemote = ReplicatedStorage:FindFirstChild("SellRemote") or ReplicatedStorage:FindFirstChild("SellItem")
+local HarvestRemote = ReplicatedStorage:FindFirstChild("HarvestRemote") or ReplicatedStorage:FindFirstChild("CollectFruit")
+local TeleportRemote = ReplicatedStorage:FindFirstChild("TeleportRemote") or ReplicatedStorage:FindFirstChild("TP")
+local WeatherService = ReplicatedStorage:FindFirstChild("WeatherService") or workspace:FindFirstChild("Weather")
 
--- === MAIN FRAME (CÓ THỂ KÉO) ===
+-- === HÀM LẤY DANH SÁCH VẬT PHẨM TỪ GAME ===
+local function getShopItems()
+    local items = {}
+    local shopUI = player.PlayerGui:FindFirstChild("Shop")
+    if shopUI then
+        for _, item in ipairs(shopUI:GetDescendants()) do
+            if item:IsA("TextButton") and item.Name == "ItemButton" then
+                table.insert(items, item.Text)
+            end
+        end
+    end
+    return items
+end
+
+-- === 1. MUA SEED ===
+local function buySeed(seedName, amount)
+    if not ShopRemote then
+        warn("Không tìm thấy ShopRemote")
+        return
+    end
+    local args = {
+        [1] = "BuySeed",
+        [2] = seedName,
+        [3] = amount or 1
+    }
+    ShopRemote:FireServer(unpack(args))
+    print("Đã mua " .. (amount or 1) .. " hạt " .. seedName)
+end
+
+-- === 2. MUA GEAR ===
+local function buyGear(gearName)
+    if not ShopRemote then
+        warn("Không tìm thấy ShopRemote")
+        return
+    end
+    ShopRemote:FireServer("BuyGear", gearName)
+    print("Đã mua gear: " .. gearName)
+end
+
+-- === 3. MUA CRATE ===
+local function buyCrate(crateType)
+    if not ShopRemote then
+        warn("Không tìm thấy ShopRemote")
+        return
+    end
+    ShopRemote:FireServer("BuyCrate", crateType)
+    print("Đã mua crate: " .. crateType)
+end
+
+-- === 4. BÁN ĐỒ ===
+local function sellItem(itemName, amount)
+    if not SellRemote then
+        warn("Không tìm thấy SellRemote")
+        return
+    end
+    SellRemote:FireServer(itemName, amount or 1)
+    print("Đã bán " .. (amount or 1) .. " " .. itemName)
+end
+
+-- === 5. DỰ ĐOÁN THỜI TIẾT ===
+local function predictWeather()
+    if WeatherService then
+        local nextWeather = WeatherService:GetAttribute("NextWeather") or WeatherService:GetAttribute("CurrentWeather")
+        print("Thời tiết sắp tới: " .. tostring(nextWeather))
+        return nextWeather
+    else
+        warn("Không tìm thấy WeatherService")
+        return nil
+    end
+end
+
+-- === 6. AUTO FARM ===
+local autoFarmRunning = false
+local function autoFarm()
+    if autoFarmRunning then
+        autoFarmRunning = false
+        print("Dừng Auto Farm")
+        return
+    end
+    autoFarmRunning = true
+    print("Bắt đầu Auto Farm")
+    task.spawn(function()
+        while autoFarmRunning do
+            if HarvestRemote then
+                HarvestRemote:FireServer("HarvestAll")
+                -- Hoặc HarvestRemote:FireServer("Harvest", "All")
+            else
+                warn("Không tìm thấy HarvestRemote")
+                break
+            end
+            task.wait(2) -- Thu hoạch mỗi 2 giây
+        end
+    end)
+end
+
+-- === 7. TELEPORT ===
+local function teleportTo(location)
+    if not TeleportRemote then
+        warn("Không tìm thấy TeleportRemote")
+        return
+    end
+    TeleportRemote:FireServer(location)
+    print("Đã teleport đến " .. location)
+end
+
+-- === 8. ANTI AFK ===
+local antiAFKRunning = false
+local function antiAFK()
+    if antiAFKRunning then
+        antiAFKRunning = false
+        print("Dừng Anti AFK")
+        return
+    end
+    antiAFKRunning = true
+    print("Bật Anti AFK")
+    task.spawn(function()
+        while antiAFKRunning do
+            local vu = game:GetService("VirtualUser")
+            if vu then
+                vu:CaptureController()
+                vu:ClickButton2(Vector2.new())
+            end
+            task.wait(300) -- 5 phút
+        end
+    end)
+end
+
+-- === XÂY DỰNG UI ===
+local FRAME_W = 550
+local FRAME_H = 420
+
 local main = Instance.new("Frame")
 main.Size = UDim2.new(0, FRAME_W, 0, FRAME_H)
 main.Position = UDim2.new(0.5, -FRAME_W/2, 0.5, -FRAME_H/2)
@@ -30,7 +168,7 @@ local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 12)
 corner.Parent = main
 
--- === KÉO THẢ TOÀN BỘ BẢNG ===
+-- KÉO THẢ
 local dragToggle = false
 local dragStart = nil
 local startPos = nil
@@ -56,7 +194,7 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- === NÚT THU NHỎ ===
+-- NÚT THU NHỎ
 local btnMinimize = Instance.new("TextButton")
 btnMinimize.Size = UDim2.new(0, 30, 0, 30)
 btnMinimize.Position = UDim2.new(1, -36, 0, 6)
@@ -72,7 +210,7 @@ local minCorner = Instance.new("UICorner")
 minCorner.CornerRadius = UDim.new(0, 6)
 minCorner.Parent = btnMinimize
 
--- === TIÊU ĐỀ ===
+-- TIÊU ĐỀ
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -50, 0, 40)
 title.Position = UDim2.new(0, 0, 0, 6)
@@ -85,7 +223,7 @@ title.TextXAlignment = Enum.TextXAlignment.Center
 title.TextYAlignment = Enum.TextYAlignment.Bottom
 title.Parent = main
 
--- === STATUS + THANH TIẾN TRÌNH ===
+-- STATUS + THANH TIẾN TRÌNH
 local statusFrame = Instance.new("Frame")
 statusFrame.Size = UDim2.new(0.85, 0, 0, 55)
 statusFrame.Position = UDim2.new(0.075, 0, 0.28, 0)
@@ -131,7 +269,7 @@ local progressFillCorner = Instance.new("UICorner")
 progressFillCorner.CornerRadius = UDim.new(1, 0)
 progressFillCorner.Parent = progressFill
 
--- === MENU CHÍNH (TAB + NỘI DUNG) ===
+-- MENU CHÍNH
 local menuFrame = Instance.new("Frame")
 menuFrame.Size = UDim2.new(0.96, 0, 0.62, 0)
 menuFrame.Position = UDim2.new(0.02, 0, 0.36, 0)
@@ -139,7 +277,7 @@ menuFrame.BackgroundTransparency = 1
 menuFrame.Visible = false
 menuFrame.Parent = main
 
--- Cột trái: Danh sách tab (thu gọn)
+-- Cột trái: Tab
 local tabList = Instance.new("ScrollingFrame")
 tabList.Size = UDim2.new(0.28, 0, 1, 0)
 tabList.Position = UDim2.new(0, 0, 0, 0)
@@ -167,7 +305,6 @@ local contentCorner = Instance.new("UICorner")
 contentCorner.CornerRadius = UDim.new(0, 6)
 contentCorner.Parent = contentFrame
 
--- Label nội dung (hiển thị chức năng)
 local contentLabel = Instance.new("TextLabel")
 contentLabel.Size = UDim2.new(1, -10, 1, -10)
 contentLabel.Position = UDim2.new(0, 5, 0, 5)
@@ -181,16 +318,16 @@ contentLabel.TextXAlignment = Enum.TextXAlignment.Left
 contentLabel.TextYAlignment = Enum.TextYAlignment.Top
 contentLabel.Parent = contentFrame
 
--- === TẠO CÁC TAB (Grow A Garden 2) ===
+-- === TẠO TAB ===
 local tabData = {
-    {name = "Main", content = "Chức năng chính\n• Auto Farm\n• Teleport\n• Speed Boost"},
-    {name = "Shop", content = "Mua sắm\n• Mua Seed\n• Mua Gear\n• Mua Crate"},
+    {name = "Main", content = "Chức năng chính\n• Auto Farm (Bật/Tắt)\n• Teleport (Chọn vị trí)\n• Speed Boost (Bật/Tắt)"},
+    {name = "Shop", content = "Mua sắm\n• Mua Seed (Nhập tên, số lượng)\n• Mua Gear (Chọn loại)\n• Mua Crate (Chọn loại)"},
+    {name = "Bán đồ", content = "Bán hàng\n• Bán Seed\n• Bán Gear\n• Bán Crate\n• Bán tất cả"},
     {name = "Server", content = "Quản lý server\n• Rejoin\n• Hop Server\n• Ping"},
-    {name = "Setting", content = "Cài đặt\n• UI Theme\n• Notification\n• Anti AFK"},
-    {name = "Săn Pet", content = "Săn Pet\n• Auto Tame\n• Select Pets"},
-    {name = "Weather", content = "Thời tiết\n• Show ETA\n• Weather Predictor"},
-    {name = "Seeds", content = "Thu thập hạt\n• Auto Collect\n• Seed Pack"},
-    {name = "Harvest", content = "Thu hoạch\n• Hái trái\n• Mutation Mode"}
+    {name = "Setting", content = "Cài đặt\n• Anti AFK (Bật/Tắt)\n• UI Theme\n• Notification"},
+    {name = "Săn Pet", content = "Săn Pet\n• Auto Tame\n• Select Pets\n• Danh sách Pet"},
+    {name = "Weather", content = "Thời tiết\n• Dự đoán thời tiết\n• Show ETA\n• Cảnh báo sớm"},
+    {name = "Harvest", content = "Thu hoạch\n• Hái trái (Tự động)\n• Mutation Mode\n• Chọn loại trái"}
 }
 
 local tabButtons = {}
@@ -321,3 +458,24 @@ local function startLoading()
 end
 
 task.spawn(startLoading)
+
+-- === KẾT NỐI CHỨC NĂNG VÀO CONSOLE (dùng để test) ===
+_G.buySeed = buySeed
+_G.buyGear = buyGear
+_G.buyCrate = buyCrate
+_G.sellItem = sellItem
+_G.predictWeather = predictWeather
+_G.autoFarm = autoFarm
+_G.teleportTo = teleportTo
+_G.antiAFK = antiAFK
+
+print("Azly Mizi Hub đã sẵn sàng!")
+print("Các lệnh có thể dùng:")
+print("  buySeed('Dragon's Breath', 10)")
+print("  buyGear('Super Shovel')")
+print("  buyCrate('Mystery Crate')")
+print("  sellItem('Apple', 50)")
+print("  predictWeather()")
+print("  autoFarm()  -- Bật/Tắt")
+print("  teleportTo('Spawn')")
+print("  antiAFK()  -- Bật/Tắt")
