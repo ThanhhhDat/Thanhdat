@@ -1,4 +1,4 @@
--- Azly Mizi Hub - Basic đen trắng, không hiệu ứng  
+-- Azly Mizi Hub - Basic đen trắng, có thu nhỏ/mở lại  
 local player = game.Players.LocalPlayer  
 local gui = Instance.new("ScreenGui")  
 gui.Name = "AzlyMiziHub"  
@@ -14,9 +14,22 @@ main.BorderSizePixel = 1
 main.BorderColor3 = Color3.fromRGB(255, 255, 255)  
 main.Parent = gui  
 
+-- === NÚT THU NHỎ (dấu -) ===  
+local btnMinimize = Instance.new("TextButton")  
+btnMinimize.Size = UDim2.new(0, 30, 0, 30)  
+btnMinimize.Position = UDim2.new(1, -35, 0, 5)  
+btnMinimize.BackgroundColor3 = Color3.fromRGB(20, 20, 20)  
+btnMinimize.BorderSizePixel = 1  
+btnMinimize.BorderColor3 = Color3.fromRGB(255, 255, 255)  
+btnMinimize.Text = "-"  
+btnMinimize.TextColor3 = Color3.fromRGB(255, 255, 255)  
+btnMinimize.TextSize = 20  
+btnMinimize.Font = Enum.Font.SourceSans  
+btnMinimize.Parent = main  
+
 -- === TIÊU ĐỀ ===  
 local title = Instance.new("TextLabel")  
-title.Size = UDim2.new(1, 0, 0, 50)  
+title.Size = UDim2.new(1, -40, 0, 50)  
 title.Position = UDim2.new(0, 0, 0, 10)  
 title.BackgroundTransparency = 1  
 title.Text = "Azly Mizi Hub"  
@@ -26,7 +39,7 @@ title.Font = Enum.Font.SourceSans
 title.TextXAlignment = Enum.TextXAlignment.Center  
 title.Parent = main  
 
--- === TRẠNG THÁI TẢI (hiện ban đầu) ===  
+-- === TRẠNG THÁI TẢI ===  
 local statusFrame = Instance.new("Frame")  
 statusFrame.Size = UDim2.new(0.8, 0, 0, 50)  
 statusFrame.Position = UDim2.new(0.1, 0, 0.3, 0)  
@@ -45,7 +58,7 @@ statusLabel.Font = Enum.Font.SourceSans
 statusLabel.TextXAlignment = Enum.TextXAlignment.Center  
 statusLabel.Parent = statusFrame  
 
--- === MENU CHÍNH (ẩn ban đầu) ===  
+-- === MENU CHÍNH ===  
 local menuFrame = Instance.new("Frame")  
 menuFrame.Size = UDim2.new(0.9, 0, 0.4, 0)  
 menuFrame.Position = UDim2.new(0.05, 0, 0.45, 0)  
@@ -79,29 +92,49 @@ btnPlayer.TextSize = 18
 btnPlayer.Font = Enum.Font.SourceSans  
 btnPlayer.Parent = menuFrame  
 
--- === XỬ LÝ LUỒNG ===  
+-- === NÚT MỞ LẠI (dấu +) - ẩn ban đầu ===  
+local btnRestore = Instance.new("TextButton")  
+btnRestore.Size = UDim2.new(0, 40, 0, 40)  
+btnRestore.Position = UDim2.new(0.5, -20, 0.5, -20)  
+btnRestore.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  
+btnRestore.BorderSizePixel = 1  
+btnRestore.BorderColor3 = Color3.fromRGB(255, 255, 255)  
+btnRestore.Text = "+"  
+btnRestore.TextColor3 = Color3.fromRGB(255, 255, 255)  
+btnRestore.TextSize = 30  
+btnRestore.Font = Enum.Font.SourceSans  
+btnRestore.Visible = false  
+btnRestore.Parent = gui  
+
+-- === XỬ LÝ THU NHỎ / MỞ LẠI ===  
+local function minimize()  
+    main.Visible = false  
+    btnRestore.Visible = true  
+end  
+
+local function restore()  
+    main.Visible = true  
+    btnRestore.Visible = false  
+end  
+
+btnMinimize.MouseButton1Click:Connect(minimize)  
+btnRestore.MouseButton1Click:Connect(restore)  
+
+-- === XỬ LÝ LUỒNG TẢI ===  
 local function startLoading()  
-    -- Đang tải  
     statusLabel.Text = "Đang Tải Dữ Liệu..."  
     task.wait(2)  
 
-    -- Tải xong  
     statusLabel.Text = "Tải dữ liệu thành công!"  
     task.wait(1)  
 
-    -- Hiện menu  
     statusFrame.Visible = false  
     menuFrame.Visible = true  
 end  
 
--- Gán sự kiện nút (tạm)  
-btnMain.MouseButton1Click:Connect(function()  
-    print("Main")  
-end)  
-
-btnPlayer.MouseButton1Click:Connect(function()  
-    print("Player")  
-end)  
+-- Gán sự kiện nút menu (tạm)  
+btnMain.MouseButton1Click:Connect(function() print("Main") end)  
+btnPlayer.MouseButton1Click:Connect(function() print("Player") end)  
 
 -- Chạy  
 task.spawn(startLoading)  
