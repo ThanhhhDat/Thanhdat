@@ -1,4 +1,4 @@
--- Azly Mizi Hub - Menu lớn (tham khảo RealKid Hub)
+-- Azly Mizi Hub - Menu tab (kéo thả, bố cục 2 cột)
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "AzlyMiziHub"
@@ -8,17 +8,16 @@ gui.ResetOnSpawn = false
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
-local FRAME_W = 500
-local FRAME_H = 420
+local FRAME_W = 550
+local FRAME_H = 400
 
--- === MAIN FRAME ===
+-- === MAIN FRAME (CÓ THỂ KÉO) ===
 local main = Instance.new("Frame")
 main.Size = UDim2.new(0, FRAME_W, 0, FRAME_H)
 main.Position = UDim2.new(0.5, -FRAME_W/2, 0.5, -FRAME_H/2)
 main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 main.BorderSizePixel = 0
 main.BackgroundTransparency = 0
-main.Visible = true
 main.Parent = gui
 
 local stroke = Instance.new("UIStroke")
@@ -31,7 +30,33 @@ local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 12)
 corner.Parent = main
 
--- === NÚT THU NHỎ (CÓ KÉO) ===
+-- === KÉO THẢ TOÀN BỘ BẢNG ===
+local dragToggle = false
+local dragStart = nil
+local startPos = nil
+
+main.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragToggle = true
+        dragStart = input.Position
+        startPos = main.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragToggle and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragToggle = false
+    end
+end)
+
+-- === NÚT THU NHỎ ===
 local btnMinimize = Instance.new("TextButton")
 btnMinimize.Size = UDim2.new(0, 32, 0, 32)
 btnMinimize.Position = UDim2.new(1, -38, 0, 6)
@@ -47,52 +72,18 @@ local minCorner = Instance.new("UICorner")
 minCorner.CornerRadius = UDim.new(0, 6)
 minCorner.Parent = btnMinimize
 
--- Kéo thả
-local dragging = false
-local dragStart = nil
-local startPos = nil
-
-btnMinimize.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = main.Position
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStart
-        main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
-
 -- === TIÊU ĐỀ ===
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -50, 0, 50)
+title.Size = UDim2.new(1, -50, 0, 45)
 title.Position = UDim2.new(0, 0, 0, 8)
 title.BackgroundTransparency = 1
 title.Text = "Azly Mizi Hub"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.TextSize = 26
+title.TextSize = 24
 title.Font = Enum.Font.GothamBold
 title.TextXAlignment = Enum.TextXAlignment.Center
 title.TextYAlignment = Enum.TextYAlignment.Bottom
 title.Parent = main
-
-local underline = Instance.new("Frame")
-underline.Size = UDim2.new(0.6, 0, 0, 2)
-underline.Position = UDim2.new(0.2, 0, 0.22, 0)
-underline.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-underline.BackgroundTransparency = 0.2
-underline.BorderSizePixel = 0
-underline.Parent = main
 
 -- === STATUS + THANH TIẾN TRÌNH ===
 local statusFrame = Instance.new("Frame")
@@ -140,48 +131,101 @@ local progressFillCorner = Instance.new("UICorner")
 progressFillCorner.CornerRadius = UDim.new(1, 0)
 progressFillCorner.Parent = progressFill
 
--- === MENU CHÍNH (LỚN) ===
+-- === MENU CHÍNH (TAB + NỘI DUNG) ===
 local menuFrame = Instance.new("Frame")
-menuFrame.Size = UDim2.new(0.9, 0, 0.6, 0)
-menuFrame.Position = UDim2.new(0.05, 0, 0.38, 0)
+menuFrame.Size = UDim2.new(0.95, 0, 0.6, 0)
+menuFrame.Position = UDim2.new(0.025, 0, 0.38, 0)
 menuFrame.BackgroundTransparency = 1
 menuFrame.Visible = false
 menuFrame.Parent = main
 
--- Tạo các nút chức năng (dạng cột)
-local function createButton(name, yPos, parent)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 0, 35)
-    btn.Position = UDim2.new(0, 0, 0, yPos)
-    btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    btn.BackgroundTransparency = 0.9
-    btn.BorderSizePixel = 1
-    btn.BorderColor3 = Color3.fromRGB(255, 255, 255)
-    btn.Text = name
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextSize = 16
-    btn.Font = Enum.Font.GothamMedium
-    btn.Parent = parent
+-- Cột trái: Danh sách tab
+local tabList = Instance.new("ScrollingFrame")
+tabList.Size = UDim2.new(0.3, 0, 1, 0)
+tabList.Position = UDim2.new(0, 0, 0, 0)
+tabList.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+tabList.BackgroundTransparency = 0
+tabList.BorderSizePixel = 0
+tabList.ScrollBarThickness = 4
+tabList.CanvasSize = UDim2.new(0, 0, 0, 300)
+tabList.Parent = menuFrame
 
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 6)
-    btnCorner.Parent = btn
+local tabCorner = Instance.new("UICorner")
+tabCorner.CornerRadius = UDim.new(0, 6)
+tabCorner.Parent = tabList
 
-    return btn
-end
+-- Cột phải: Nội dung hiển thị
+local contentFrame = Instance.new("Frame")
+contentFrame.Size = UDim2.new(0.65, 0, 1, 0)
+contentFrame.Position = UDim2.new(0.33, 0, 0, 0)
+contentFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+contentFrame.BackgroundTransparency = 0
+contentFrame.BorderSizePixel = 0
+contentFrame.Parent = menuFrame
 
--- Danh sách nút menu (theo ảnh tham khảo)
-local menuItems = {
-    "Main", "Shop", "Server", "Setting", "Sản Pet (Hop)",
-    "Weather And Stock", "Collect Seeds", "Pets", "Harvest Fruits"
+local contentCorner = Instance.new("UICorner")
+contentCorner.CornerRadius = UDim.new(0, 6)
+contentCorner.Parent = contentFrame
+
+-- Label nội dung (mặc định)
+local contentLabel = Instance.new("TextLabel")
+contentLabel.Size = UDim2.new(1, -10, 1, -10)
+contentLabel.Position = UDim2.new(0, 5, 0, 5)
+contentLabel.BackgroundTransparency = 1
+contentLabel.Text = "Chọn một tab"
+contentLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+contentLabel.TextSize = 16
+contentLabel.Font = Enum.Font.GothamMedium
+contentLabel.TextWrapped = true
+contentLabel.TextXAlignment = Enum.TextXAlignment.Left
+contentLabel.TextYAlignment = Enum.TextYAlignment.Top
+contentLabel.Parent = contentFrame
+
+-- === TẠO CÁC TAB ===
+local tabData = {
+    {name = "Main", content = "Chức năng chính\n- Auto Farm\n- Teleport\n- Speed Boost"},
+    {name = "Shop", content = "Mua bán\n- Auto Buy\n- Farm Money"},
+    {name = "Server", content = "Quản lý server\n- Rejoin\n- Hop Server\n- Ping"},
+    {name = "Setting", content = "Cài đặt\n- UI Theme\n- Notification"},
+    {name = "Sản Pet (Hop)", content = "Săn Pet\n- Auto Tame\n- Select Pets"},
+    {name = "Weather", content = "Thời tiết\n- Show ETA\n- Weather Predictor"},
+    {name = "Seeds", content = "Thu thập hạt\n- Auto Collect\n- Seed Pack"},
+    {name = "Harvest", content = "Thu hoạch\n- Select Fruits\n- Mutation Mode"}
 }
 
-local buttons = {}
-for i, item in ipairs(menuItems) do
-    local y = (i - 1) * 40
-    local btn = createButton(item, y, menuFrame)
-    table.insert(buttons, btn)
+local tabButtons = {}
+for i, data in ipairs(tabData) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.9, 0, 0, 30)
+    btn.Position = UDim2.new(0.05, 0, 0, (i-1)*35)
+    btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    btn.BackgroundTransparency = 0.85
+    btn.BorderSizePixel = 1
+    btn.BorderColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Text = data.name
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize = 14
+    btn.Font = Enum.Font.GothamMedium
+    btn.Parent = tabList
+
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 4)
+    btnCorner.Parent = btn
+
+    btn.MouseButton1Click:Connect(function()
+        contentLabel.Text = data.content
+        -- Đánh dấu tab đang chọn
+        for _, b in ipairs(tabButtons) do
+            b.BackgroundTransparency = 0.85
+        end
+        btn.BackgroundTransparency = 0.5
+    end)
+
+    table.insert(tabButtons, btn)
 end
+
+-- Cập nhật canvas size cho ScrollingFrame
+tabList.CanvasSize = UDim2.new(0, 0, 0, #tabData * 35 + 20)
 
 -- === NÚT MỞ LẠI ===
 local btnRestore = Instance.new("TextButton")
@@ -229,7 +273,7 @@ btnRestore.MouseButton1Click:Connect(function()
     fadeIn(main)
     if menuFrame.Visible == false and statusFrame.Visible == false then
         menuFrame.Visible = true
-        for _, btn in ipairs(buttons) do
+        for _, btn in ipairs(tabButtons) do
             btn.BackgroundTransparency = 1
             task.wait(0.05)
             fadeIn(btn)
@@ -272,18 +316,11 @@ local function startLoading()
     statusFrame.Visible = false
     menuFrame.Visible = true
 
-    for _, btn in ipairs(buttons) do
+    for _, btn in ipairs(tabButtons) do
         btn.BackgroundTransparency = 1
         task.wait(0.05)
         fadeIn(btn)
     end
-end
-
--- Gán sự kiện cho các nút (tạm)
-for _, btn in ipairs(buttons) do
-    btn.MouseButton1Click:Connect(function()
-        print("Đã bấm: " .. btn.Text)
-    end)
 end
 
 task.spawn(startLoading)
