@@ -1,5 +1,7 @@
 -- Azly Mizi Hub - Grow A Garden 2 (Full chức năng thật)
--- Dành cho Guts & Glory 2 (game.GameId == 10200395747)
+-- Tổng hợp từ Teddy Hub, Lumin Hub, Unknown Hub, Hoshi Hub
+
+repeat task.wait() until game:IsLoaded() and game.Players.LocalPlayer
 
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
@@ -11,86 +13,75 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
 
--- === TÌM REMOTE EVENTS ===
-local ShopRemote = ReplicatedStorage:FindFirstChild("ShopRemote") or ReplicatedStorage:FindFirstChild("BuyItem")
-local SellRemote = ReplicatedStorage:FindFirstChild("SellRemote") or ReplicatedStorage:FindFirstChild("SellItem")
-local HarvestRemote = ReplicatedStorage:FindFirstChild("HarvestRemote") or ReplicatedStorage:FindFirstChild("CollectFruit")
-local TeleportRemote = ReplicatedStorage:FindFirstChild("TeleportRemote") or ReplicatedStorage:FindFirstChild("TP")
-local WeatherService = ReplicatedStorage:FindFirstChild("WeatherService") or workspace:FindFirstChild("Weather")
-
--- === HÀM LẤY DANH SÁCH VẬT PHẨM TỪ GAME ===
-local function getShopItems()
-    local items = {}
-    local shopUI = player.PlayerGui:FindFirstChild("Shop")
-    if shopUI then
-        for _, item in ipairs(shopUI:GetDescendants()) do
-            if item:IsA("TextButton") and item.Name == "ItemButton" then
-                table.insert(items, item.Text)
+-- === TÌM REMOTE EVENTS (tự động phát hiện) ===
+local function findRemote(namePattern)
+    for _, service in ipairs({ReplicatedStorage, Workspace, player}) do
+        for _, obj in ipairs(service:GetDescendants()) do
+            if obj:IsA("RemoteEvent") and obj.Name:lower():find(namePattern:lower()) then
+                return obj
             end
         end
     end
-    return items
+    return nil
 end
 
--- === 1. MUA SEED ===
+local ShopRemote = findRemote("shop") or findRemote("buy") or ReplicatedStorage:FindFirstChild("ShopRemote")
+local SellRemote = findRemote("sell") or ReplicatedStorage:FindFirstChild("SellRemote")
+local HarvestRemote = findRemote("harvest") or findRemote("collect") or ReplicatedStorage:FindFirstChild("HarvestRemote")
+local TeleportRemote = findRemote("teleport") or findRemote("tp") or ReplicatedStorage:FindFirstChild("TeleportRemote")
+local WeatherService = ReplicatedStorage:FindFirstChild("WeatherService") or Workspace:FindFirstChild("Weather")
+
+-- === CHỨC NĂNG CHÍNH ===
 local function buySeed(seedName, amount)
-    if not ShopRemote then
+    if ShopRemote then
+        ShopRemote:FireServer("BuySeed", seedName, amount or 1)
+        print("Đã mua " .. (amount or 1) .. " hạt " .. seedName)
+    else
         warn("Không tìm thấy ShopRemote")
-        return
     end
-    local args = {
-        [1] = "BuySeed",
-        [2] = seedName,
-        [3] = amount or 1
-    }
-    ShopRemote:FireServer(unpack(args))
-    print("Đã mua " .. (amount or 1) .. " hạt " .. seedName)
 end
 
--- === 2. MUA GEAR ===
 local function buyGear(gearName)
-    if not ShopRemote then
+    if ShopRemote then
+        ShopRemote:FireServer("BuyGear", gearName)
+        print("Đã mua gear: " .. gearName)
+    else
         warn("Không tìm thấy ShopRemote")
-        return
     end
-    ShopRemote:FireServer("BuyGear", gearName)
-    print("Đã mua gear: " .. gearName)
 end
 
--- === 3. MUA CRATE ===
 local function buyCrate(crateType)
-    if not ShopRemote then
+    if ShopRemote then
+        ShopRemote:FireServer("BuyCrate", crateType)
+        print("Đã mua crate: " .. crateType)
+    else
         warn("Không tìm thấy ShopRemote")
-        return
     end
-    ShopRemote:FireServer("BuyCrate", crateType)
-    print("Đã mua crate: " .. crateType)
 end
 
--- === 4. BÁN ĐỒ ===
 local function sellItem(itemName, amount)
-    if not SellRemote then
+    if SellRemote then
+        SellRemote:FireServer(itemName, amount or 1)
+        print("Đã bán " .. (amount or 1) .. " " .. itemName)
+    else
         warn("Không tìm thấy SellRemote")
-        return
     end
-    SellRemote:FireServer(itemName, amount or 1)
-    print("Đã bán " .. (amount or 1) .. " " .. itemName)
 end
 
--- === 5. DỰ ĐOÁN THỜI TIẾT ===
 local function predictWeather()
     if WeatherService then
-        local nextWeather = WeatherService:GetAttribute("NextWeather") or WeatherService:GetAttribute("CurrentWeather")
-        print("Thời tiết sắp tới: " .. tostring(nextWeather))
-        return nextWeather
+        local next = WeatherService:GetAttribute("NextWeather") or WeatherService:GetAttribute("CurrentWeather")
+        print("Thời tiết sắp tới: " .. tostring(next))
+        return next
     else
         warn("Không tìm thấy WeatherService")
         return nil
     end
 end
 
--- === 6. AUTO FARM ===
+-- Auto Farm (thu hoạch tự động)
 local autoFarmRunning = false
 local function autoFarm()
     if autoFarmRunning then
@@ -109,22 +100,22 @@ local function autoFarm()
                 warn("Không tìm thấy HarvestRemote")
                 break
             end
-            task.wait(2) -- Thu hoạch mỗi 2 giây
+            task.wait(2)
         end
     end)
 end
 
--- === 7. TELEPORT ===
+-- Teleport
 local function teleportTo(location)
-    if not TeleportRemote then
+    if TeleportRemote then
+        TeleportRemote:FireServer(location)
+        print("Đã teleport đến " .. location)
+    else
         warn("Không tìm thấy TeleportRemote")
-        return
     end
-    TeleportRemote:FireServer(location)
-    print("Đã teleport đến " .. location)
 end
 
--- === 8. ANTI AFK ===
+-- Anti AFK
 local antiAFKRunning = false
 local function antiAFK()
     if antiAFKRunning then
@@ -141,7 +132,7 @@ local function antiAFK()
                 vu:CaptureController()
                 vu:ClickButton2(Vector2.new())
             end
-            task.wait(300) -- 5 phút
+            task.wait(300)
         end
     end)
 end
@@ -459,7 +450,7 @@ end
 
 task.spawn(startLoading)
 
--- === KẾT NỐI CHỨC NĂNG VÀO CONSOLE (dùng để test) ===
+-- === EXPOSE FUNCTIONS TO CONSOLE ===
 _G.buySeed = buySeed
 _G.buyGear = buyGear
 _G.buyCrate = buyCrate
