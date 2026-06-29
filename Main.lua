@@ -1,4 +1,4 @@
--- Azly Mizi Hub - Bản sửa lỗi hiển thị menu + kéo thả nút thu nhỏ
+-- Azly Mizi Hub - Bản sửa lỗi hiển thị menu + thanh tiến trình + giữ trạng thái
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "AzlyMiziHub"
@@ -8,20 +8,19 @@ gui.ResetOnSpawn = false
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
--- Kích thước
 local FRAME_W = 360
-local FRAME_H = 240
+local FRAME_H = 260
 
--- Frame chính
+-- === MAIN FRAME ===
 local main = Instance.new("Frame")
 main.Size = UDim2.new(0, FRAME_W, 0, FRAME_H)
 main.Position = UDim2.new(0.5, -FRAME_W/2, 0.5, -FRAME_H/2)
 main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 main.BorderSizePixel = 0
-main.BackgroundTransparency = 1
+main.BackgroundTransparency = 0
+main.Visible = true
 main.Parent = gui
 
--- Shadow
 local shadow = Instance.new("UIShadow")
 shadow.Color = Color3.fromRGB(0, 0, 0)
 shadow.Offset = Vector2.new(0, 8)
@@ -29,14 +28,12 @@ shadow.BlurRadius = 24
 shadow.Transparency = 0.8
 shadow.Parent = main
 
--- Viền
 local stroke = Instance.new("UIStroke")
 stroke.Color = Color3.fromRGB(255, 255, 255)
 stroke.Thickness = 1.2
 stroke.Transparency = 0.3
 stroke.Parent = main
 
--- Bo góc
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 12)
 corner.Parent = main
@@ -57,33 +54,23 @@ local minCorner = Instance.new("UICorner")
 minCorner.CornerRadius = UDim.new(0, 6)
 minCorner.Parent = btnMinimize
 
--- Biến kéo thả
+-- Kéo thả
 local dragging = false
 local dragStart = nil
 local startPos = nil
-
-local function updateDrag(input)
-    local delta = input.Position - dragStart
-    local newPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    main.Position = newPos
-end
 
 btnMinimize.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
         startPos = main.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
     end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
     if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        updateDrag(input)
+        local delta = input.Position - dragStart
+        main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
 
@@ -106,7 +93,6 @@ title.TextXAlignment = Enum.TextXAlignment.Center
 title.TextYAlignment = Enum.TextYAlignment.Bottom
 title.Parent = main
 
--- Đường gạch chân
 local underline = Instance.new("Frame")
 underline.Size = UDim2.new(0.6, 0, 0, 2)
 underline.Position = UDim2.new(0.2, 0, 0.22, 0)
@@ -115,14 +101,19 @@ underline.BackgroundTransparency = 0.2
 underline.BorderSizePixel = 0
 underline.Parent = main
 
--- === STATUS (hiển thị đúng) ===
+-- === STATUS + THANH TIẾN TRÌNH ===
 local statusFrame = Instance.new("Frame")
-statusFrame.Size = UDim2.new(0.85, 0, 0, 55)
+statusFrame.Size = UDim2.new(0.85, 0, 0, 60)
 statusFrame.Position = UDim2.new(0.075, 0, 0.32, 0)
 statusFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 statusFrame.BorderSizePixel = 0
-statusFrame.BackgroundTransparency = 1
+statusFrame.BackgroundTransparency = 0
+statusFrame.Visible = true
 statusFrame.Parent = main
+
+local statusCorner = Instance.new("UICorner")
+statusCorner.CornerRadius = UDim.new(0, 8)
+statusCorner.Parent = statusFrame
 
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, 0, 0.6, 0)
@@ -137,7 +128,7 @@ statusLabel.Parent = statusFrame
 
 -- Thanh tiến trình
 local progressBg = Instance.new("Frame")
-progressBg.Size = UDim2.new(0.9, 0, 0, 3)
+progressBg.Size = UDim2.new(0.9, 0, 0, 4)
 progressBg.Position = UDim2.new(0.05, 0, 0.75, 0)
 progressBg.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 progressBg.BorderSizePixel = 0
@@ -157,10 +148,10 @@ local progressFillCorner = Instance.new("UICorner")
 progressFillCorner.CornerRadius = UDim.new(1, 0)
 progressFillCorner.Parent = progressFill
 
--- === MENU CHÍNH (sửa lỗi hiển thị) ===
+-- === MENU CHÍNH ===
 local menuFrame = Instance.new("Frame")
 menuFrame.Size = UDim2.new(0.85, 0, 0.4, 0)
-menuFrame.Position = UDim2.new(0.075, 0, 0.48, 0)
+menuFrame.Position = UDim2.new(0.075, 0, 0.50, 0)
 menuFrame.BackgroundTransparency = 1
 menuFrame.Visible = false
 menuFrame.Parent = main
@@ -219,7 +210,6 @@ local restoreCorner = Instance.new("UICorner")
 restoreCorner.CornerRadius = UDim.new(1, 0)
 restoreCorner.Parent = btnRestore
 
--- Shadow cho restore
 local restoreShadow = Instance.new("UIShadow")
 restoreShadow.Color = Color3.fromRGB(0, 0, 0)
 restoreShadow.Offset = Vector2.new(0, 6)
@@ -227,23 +217,21 @@ restoreShadow.BlurRadius = 16
 restoreShadow.Transparency = 0.7
 restoreShadow.Parent = btnRestore
 
--- === HÀM ANIMATION ===
-local function fadeIn(obj, duration)
-    duration = duration or 0.4
+-- === ANIMATION ===
+local function fadeIn(obj)
     obj.BackgroundTransparency = 1
     obj.Visible = true
-    TweenService:Create(obj, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(obj, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
 end
 
-local function fadeOut(obj, duration)
-    duration = duration or 0.25
-    TweenService:Create(obj, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
+local function fadeOut(obj)
+    TweenService:Create(obj, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
 end
 
 -- === XỬ LÝ THU NHỎ / MỞ LẠI ===
 btnMinimize.MouseButton1Click:Connect(function()
     fadeOut(main)
-    task.wait(0.25)
+    task.wait(0.2)
     main.Visible = false
     btnRestore.Visible = true
     fadeIn(btnRestore)
@@ -251,7 +239,7 @@ end)
 
 btnRestore.MouseButton1Click:Connect(function()
     fadeOut(btnRestore)
-    task.wait(0.25)
+    task.wait(0.2)
     btnRestore.Visible = false
     main.Visible = true
     fadeIn(main)
@@ -259,7 +247,17 @@ end)
 
 -- === XỬ LÝ TẢI ===
 local function startLoading()
-    fadeIn(main, 0.5)
+    -- Đảm bảo main hiển thị
+    main.Visible = true
+    fadeIn(main)
+
+    -- Reset trạng thái
+    statusFrame.Visible = true
+    statusFrame.BackgroundTransparency = 0
+    menuFrame.Visible = false
+    progressFill.Size = UDim2.new(0, 0, 1, 0)
+    statusLabel.Text = "Đang tải dữ liệu..."
+    statusLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
 
     local steps = {
         {text = "Đang tải cấu hình...", progress = 0.2},
@@ -285,11 +283,10 @@ local function startLoading()
     statusFrame.Visible = false
     menuFrame.Visible = true
 
-    -- Animation cho nút menu
     for _, btn in ipairs({btnMain, btnPlayer}) do
         btn.BackgroundTransparency = 1
         task.wait(0.1)
-        fadeIn(btn, 0.4)
+        fadeIn(btn)
     end
 end
 
@@ -297,4 +294,5 @@ end
 btnMain.MouseButton1Click:Connect(function() print("Main") end)
 btnPlayer.MouseButton1Click:Connect(function() print("Player") end)
 
+-- Chạy
 task.spawn(startLoading)
