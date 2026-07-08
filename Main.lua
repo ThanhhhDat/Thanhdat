@@ -1,4 +1,4 @@
--- Azly Mizi Hub - Avatar bo tròn, xích lên trên, sát góc trái
+-- Azly Mizi Hub - Avatar bo tròn, sát mép trên, đúng vị trí
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "AzlyMiziHub"
@@ -9,7 +9,7 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
 local FRAME_W = 450
-local FRAME_H = 350  -- Giảm chiều cao để gọn
+local FRAME_H = 330
 
 -- === MAIN FRAME ===
 local main = Instance.new("Frame")
@@ -31,16 +31,16 @@ local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 12)
 corner.Parent = main
 
--- === AVATAR - GÓC TRÁI TRÊN CÙNG, XÍCH LÊN SÁT MÉP ===
+-- === AVATAR BO TRÒN - GÓC TRÁI TRÊN CÙNG, SÁT MÉP ===
 local avatarFrame = Instance.new("Frame")
 avatarFrame.Size = UDim2.new(0, 55, 0, 55)
-avatarFrame.Position = UDim2.new(0, 10, 0, 10)  -- Sát mép trái và trên
+avatarFrame.Position = UDim2.new(0, 8, 0, 8)  -- Sát mép trái và trên
 avatarFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 avatarFrame.BorderSizePixel = 2
 avatarFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
 avatarFrame.Parent = main
 
--- Bo tròn HOÀN TOÀN (hình tròn)
+-- BO TRÒN HOÀN TOÀN (quan trọng: CornerRadius = 1,0)
 local avatarCorner = Instance.new("UICorner")
 avatarCorner.CornerRadius = UDim.new(1, 0)
 avatarCorner.Parent = avatarFrame
@@ -85,8 +85,8 @@ title.Parent = main
 
 -- === STATUS + THANH TIẾN TRÌNH ===
 local statusFrame = Instance.new("Frame")
-statusFrame.Size = UDim2.new(0.85, 0, 0, 50)
-statusFrame.Position = UDim2.new(0.075, 0, 0.28, 0)
+statusFrame.Size = UDim2.new(0.85, 0, 0, 45)
+statusFrame.Position = UDim2.new(0.075, 0, 0.26, 0)
 statusFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 statusFrame.BorderSizePixel = 0
 statusFrame.BackgroundTransparency = 0
@@ -132,7 +132,7 @@ progressFillCorner.Parent = progressFill
 -- === MENU CHÍNH ===
 local menuFrame = Instance.new("Frame")
 menuFrame.Size = UDim2.new(0.96, 0, 0.55, 0)
-menuFrame.Position = UDim2.new(0.02, 0, 0.40, 0)
+menuFrame.Position = UDim2.new(0.02, 0, 0.38, 0)
 menuFrame.BackgroundTransparency = 1
 menuFrame.Visible = false
 menuFrame.Parent = main
@@ -257,7 +257,7 @@ local function createAntiAFKContent()
     desc.TextXAlignment = Enum.TextXAlignment.Left
     desc.Parent = contentFrame
 
-    -- === BIẾN TRẠNG THÁI ===
+    -- Biến trạng thái
     local isOn = false
     local antiAFKRunning = false
     local antiAFKThread = nil
@@ -334,7 +334,7 @@ btnRestore.Image = "rbxassetid://90447015543102"
 btnRestore.Visible = false
 btnRestore.Parent = gui
 
--- Bo tròn hoàn toàn
+-- BO TRÒN CHO NÚT RESTORE
 local restoreCorner = Instance.new("UICorner")
 restoreCorner.CornerRadius = UDim.new(1, 0)
 restoreCorner.Parent = btnRestore
