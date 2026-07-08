@@ -1,4 +1,4 @@
--- Azly Mizi Hub - Tab Anti AFK + Avatar + Nút gạt
+-- Azly Mizi Hub - Tab Anti AFK + Avatar góc trái trên + Nút gạt
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "AzlyMiziHub"
@@ -7,7 +7,6 @@ gui.ResetOnSpawn = false
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local HttpService = game:GetService("HttpService")
 
 local FRAME_W = 450
 local FRAME_H = 380
@@ -174,7 +173,7 @@ local btnCorner = Instance.new("UICorner")
 btnCorner.CornerRadius = UDim.new(0, 4)
 btnCorner.Parent = btnAntiAFK
 
--- === TẠO NỘI DUNG ANTI AFK (CÓ AVATAR) ===
+-- === TẠO NỘI DUNG ANTI AFK (AVATAR GÓC TRÁI TRÊN) ===
 local function createAntiAFKContent()
     for _, child in ipairs(contentFrame:GetChildren()) do
         if child ~= contentLabel then child:Destroy() end
@@ -192,12 +191,12 @@ local function createAntiAFKContent()
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = contentFrame
 
-    -- === KHUNG AVATAR (góc trái, vị trí bạn khoanh) ===
+    -- === AVATAR GÓC TRÁI TRÊN CÙNG (VÙNG KHOANH ĐỎ) ===
     local avatarFrame = Instance.new("Frame")
-    avatarFrame.Size = UDim2.new(0, 70, 0, 70)
-    avatarFrame.Position = UDim2.new(0, 10, 0, 40)
+    avatarFrame.Size = UDim2.new(0, 60, 0, 60)
+    avatarFrame.Position = UDim2.new(0, 5, 0, 40)  -- Góc trái trên, sát mép
     avatarFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    avatarFrame.BorderSizePixel = 1
+    avatarFrame.BorderSizePixel = 2
     avatarFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
     avatarFrame.Parent = contentFrame
 
@@ -205,18 +204,18 @@ local function createAntiAFKContent()
     avatarCorner.CornerRadius = UDim.new(1, 0)
     avatarCorner.Parent = avatarFrame
 
-    -- Tải avatar từ URL
+    -- Tải ảnh avatar từ link ImgBB (lấy direct link)
     local avatarImage = Instance.new("ImageLabel")
     avatarImage.Size = UDim2.new(1, 0, 1, 0)
     avatarImage.Position = UDim2.new(0, 0, 0, 0)
     avatarImage.BackgroundTransparency = 1
-    avatarImage.Image = "https://scontent-hkg1-2.xx.fbcdn.net/v/t39.30808-6/731093975_122133909105122091_5797557988012201031_n.png?stp=dst-png&cstp=mx202x202&ctp=s202x202&_nc_cat=104&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=4Ucl_oATSvsQ7kNvwFgV6Kg&_nc_oc=AdoTgZ20sFrSu-nKaAzeMs8Sk3OiRaZ2I17uo_cjgK7gvR-46t__7GRRb0hpbieiu_fLE2xai90oD4Y4WT_KdYBR&_nc_zt=23&_nc_ht=scontent-hkg1-2.xx&_nc_gid=BRnZSimGmHAABWpSzhlNbw&_nc_ss=7b2a8&oh=00_AQAeINDZepX_IS4QaGTWG6EIEQbFfJbxa0owPezdBx-JgA&oe=6A53F6F2"
+    avatarImage.Image = "https://i.ibb.co/j92H8Kmr/731093975-122133909105122091-5797557988012201031-n-1.png"
     avatarImage.Parent = avatarFrame
 
     -- === KHUNG TOGGLE (bên phải avatar) ===
     local toggleFrame = Instance.new("Frame")
-    toggleFrame.Size = UDim2.new(0.55, 0, 0, 40)
-    toggleFrame.Position = UDim2.new(0.35, 0, 0.2, 0)
+    toggleFrame.Size = UDim2.new(0.5, 0, 0, 40)
+    toggleFrame.Position = UDim2.new(0.42, 0, 0.2, 0)
     toggleFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     toggleFrame.BorderSizePixel = 1
     toggleFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
@@ -241,7 +240,7 @@ local function createAntiAFKContent()
     -- Nút gạt
     local toggleBtn = Instance.new("TextButton")
     toggleBtn.Size = UDim2.new(0, 50, 0, 26)
-    toggleBtn.Position = UDim2.new(0.65, 0, 0.5, -13)
+    toggleBtn.Position = UDim2.new(0.6, 0, 0.5, -13)
     toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     toggleBtn.BorderSizePixel = 0
     toggleBtn.Text = ""
