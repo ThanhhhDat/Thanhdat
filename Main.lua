@@ -1,4 +1,4 @@
--- Azly Mizi Hub - Avatar bo tròn (hình tròn), nút + bo tròn, góc trái trên
+-- Azly Mizi Hub - Anti AFK + ESP (khung xanh cho người chơi)
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "AzlyMiziHub"
@@ -7,9 +7,11 @@ gui.ResetOnSpawn = false
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
 
 local FRAME_W = 460
-local FRAME_H = 340
+local FRAME_H = 380
 
 -- === MAIN FRAME ===
 local main = Instance.new("Frame")
@@ -31,16 +33,15 @@ local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 12)
 corner.Parent = main
 
--- === AVATAR BO TRÒN - GÓC TRÁI TRÊN CÙNG ===
+-- === AVATAR BO TRÒN ===
 local avatarFrame = Instance.new("Frame")
 avatarFrame.Size = UDim2.new(0, 55, 0, 55)
-avatarFrame.Position = UDim2.new(0, 10, 0, 10)  -- Sát mép trái và trên
+avatarFrame.Position = UDim2.new(0, 10, 0, 10)
 avatarFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 avatarFrame.BorderSizePixel = 2
 avatarFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
 avatarFrame.Parent = main
 
--- Bo tròn hoàn toàn (hình tròn)
 local avatarCorner = Instance.new("UICorner")
 avatarCorner.CornerRadius = UDim.new(1, 0)
 avatarCorner.Parent = avatarFrame
@@ -130,8 +131,8 @@ progressFillCorner.Parent = progressFill
 
 -- === MENU CHÍNH ===
 local menuFrame = Instance.new("Frame")
-menuFrame.Size = UDim2.new(0.96, 0, 0.58, 0)
-menuFrame.Position = UDim2.new(0.02, 0, 0.38, 0)
+menuFrame.Size = UDim2.new(0.96, 0, 0.62, 0)
+menuFrame.Position = UDim2.new(0.02, 0, 0.36, 0)
 menuFrame.BackgroundTransparency = 1
 menuFrame.Visible = false
 menuFrame.Parent = main
@@ -144,7 +145,7 @@ tabList.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 tabList.BackgroundTransparency = 0
 tabList.BorderSizePixel = 0
 tabList.ScrollBarThickness = 3
-tabList.CanvasSize = UDim2.new(0, 0, 0, 50)
+tabList.CanvasSize = UDim2.new(0, 0, 0, 90)
 tabList.Parent = menuFrame
 
 local tabCorner = Instance.new("UICorner")
@@ -164,9 +165,9 @@ local contentCorner = Instance.new("UICorner")
 contentCorner.CornerRadius = UDim.new(0, 6)
 contentCorner.Parent = contentFrame
 
--- === TAB ANTI AFK ===
+-- === TẠO TAB ANTI AFK ===
 local btnAntiAFK = Instance.new("TextButton")
-btnAntiAFK.Size = UDim2.new(0.9, 0, 0, 40)
+btnAntiAFK.Size = UDim2.new(0.9, 0, 0, 35)
 btnAntiAFK.Position = UDim2.new(0.05, 0, 0, 0)
 btnAntiAFK.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 btnAntiAFK.BackgroundTransparency = 0.5
@@ -182,11 +183,153 @@ local btnCorner = Instance.new("UICorner")
 btnCorner.CornerRadius = UDim.new(0, 4)
 btnCorner.Parent = btnAntiAFK
 
--- === TẠO NỘI DUNG ANTI AFK ===
-local function createAntiAFKContent()
-    for _, child in ipairs(contentFrame:GetChildren()) do
-        child:Destroy()
+-- === TẠO TAB ESP ===
+local btnESP = Instance.new("TextButton")
+btnESP.Size = UDim2.new(0.9, 0, 0, 35)
+btnESP.Position = UDim2.new(0.05, 0, 0, 45)
+btnESP.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+btnESP.BackgroundTransparency = 0.85
+btnESP.BorderSizePixel = 1
+btnESP.BorderColor3 = Color3.fromRGB(255, 255, 255)
+btnESP.Text = "ESP"
+btnESP.TextColor3 = Color3.fromRGB(255, 255, 255)
+btnESP.TextSize = 14
+btnESP.Font = Enum.Font.GothamMedium
+btnESP.Parent = tabList
+
+local btnCorner2 = Instance.new("UICorner")
+btnCorner2.CornerRadius = UDim.new(0, 4)
+btnCorner2.Parent = btnESP
+
+-- === BIẾN ESP ===
+local espEnabled = false
+local espBoxes = {}
+local espConnections = {}
+
+-- === HÀM ESP ===
+local function createESP(playerObj)
+    if playerObj == player then return end
+    
+    local character = playerObj.Character
+    if not character then return end
+    
+    local root = character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    
+    -- Tạo khung
+    local box = Instance.new("BoxHandleAdornment")
+    box.Size = Vector3.new(3, 5, 2)
+    box.Color3 = Color3.fromRGB(0, 255, 0) -- Xanh lá
+    box.Transparency = 0.5
+    box.ZIndex = 0
+    box.AlwaysOnTop = true
+    box.Adornee = root
+    box.Parent = gui
+    
+    -- Tên
+    local nameLabel = Instance.new("BillboardGui")
+    nameLabel.Size = UDim2.new(0, 100, 0, 20)
+    nameLabel.StudsOffset = Vector3.new(0, 3, 0)
+    nameLabel.AlwaysOnTop = true
+    nameLabel.Parent = gui
+    
+    local nameText = Instance.new("TextLabel")
+    nameText.Size = UDim2.new(1, 0, 1, 0)
+    nameText.BackgroundTransparency = 1
+    nameText.Text = playerObj.Name
+    nameText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    nameText.TextSize = 12
+    nameText.Font = Enum.Font.GothamBold
+    nameText.TextStrokeTransparency = 0.5
+    nameText.Parent = nameLabel
+    
+    -- Khoảng cách
+    local distLabel = Instance.new("BillboardGui")
+    distLabel.Size = UDim2.new(0, 80, 0, 15)
+    distLabel.StudsOffset = Vector3.new(0, -2, 0)
+    distLabel.AlwaysOnTop = true
+    distLabel.Parent = gui
+    
+    local distText = Instance.new("TextLabel")
+    distText.Size = UDim2.new(1, 0, 1, 0)
+    distText.BackgroundTransparency = 1
+    distText.Text = "0m"
+    distText.TextColor3 = Color3.fromRGB(200, 200, 200)
+    distText.TextSize = 10
+    distText.Font = Enum.Font.GothamMedium
+    distText.Parent = distLabel
+    
+    -- Lưu vào bảng
+    espBoxes[playerObj] = {box = box, name = nameLabel, dist = distLabel}
+    
+    -- Cập nhật khoảng cách
+    local conn
+    conn = RunService.Heartbeat:Connect(function()
+        if not espEnabled then
+            conn:Disconnect()
+            return
+        end
+        local char = player.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            local myRoot = char.HumanoidRootPart
+            local targetRoot = root
+            if targetRoot then
+                local dist = (myRoot.Position - targetRoot.Position).Magnitude
+                distText.Text = math.floor(dist) .. "m"
+            end
+        end
+    end)
+    table.insert(espConnections, conn)
+end
+
+local function toggleESP()
+    espEnabled = not espEnabled
+    
+    if espEnabled then
+        -- Xóa ESP cũ
+        for _, data in pairs(espBoxes) do
+            if data.box then data.box:Destroy() end
+            if data.name then data.name:Destroy() end
+            if data.dist then data.dist:Destroy() end
+        end
+        espBoxes = {}
+        for _, conn in ipairs(espConnections) do
+            conn:Disconnect()
+        end
+        espConnections = {}
+        
+        -- Tạo ESP cho tất cả người chơi
+        for _, p in ipairs(Players:GetPlayers()) do
+            createESP(p)
+        end
+        
+        -- Kết nối khi người chơi mới vào
+        local newConn = Players.PlayerAdded:Connect(function(p)
+            task.wait(0.5)
+            createESP(p)
+        end)
+        table.insert(espConnections, newConn)
+        
+        print("ESP đã bật")
+    else
+        -- Xóa ESP
+        for _, data in pairs(espBoxes) do
+            if data.box then data.box:Destroy() end
+            if data.name then data.name:Destroy() end
+            if data.dist then data.dist:Destroy() end
+        end
+        espBoxes = {}
+        for _, conn in ipairs(espConnections) do
+            conn:Disconnect()
+        end
+        espConnections = {}
+        print("ESP đã tắt")
     end
+end
+
+-- === TẠO NỘI DUNG CHO TỪNG TAB ===
+local function createAntiAFKContent()
+    for _, child in ipairs(contentFrame:GetChildren()) do child:Destroy() end
 
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, -10, 0, 28)
@@ -319,9 +462,97 @@ local function createAntiAFKContent()
     toggleBtn.MouseButton1Click:Connect(toggleAntiAFK)
 end
 
+local function createESPContent()
+    for _, child in ipairs(contentFrame:GetChildren()) do child:Destroy() end
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -10, 0, 28)
+    label.Position = UDim2.new(0, 5, 0, 5)
+    label.BackgroundTransparency = 1
+    label.Text = "ESP (Player ESP)"
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextSize = 16
+    label.Font = Enum.Font.GothamBold
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = contentFrame
+
+    local toggleFrame = Instance.new("Frame")
+    toggleFrame.Size = UDim2.new(0.8, 0, 0, 38)
+    toggleFrame.Position = UDim2.new(0.05, 0, 0.22, 0)
+    toggleFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    toggleFrame.BorderSizePixel = 1
+    toggleFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+    toggleFrame.Parent = contentFrame
+
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.CornerRadius = UDim.new(0, 6)
+    toggleCorner.Parent = toggleFrame
+
+    local statusText = Instance.new("TextLabel")
+    statusText.Size = UDim2.new(0.4, 0, 1, 0)
+    statusText.Position = UDim2.new(0, 5, 0, 0)
+    statusText.BackgroundTransparency = 1
+    statusText.Text = "Tắt"
+    statusText.TextColor3 = Color3.fromRGB(200, 200, 200)
+    statusText.TextSize = 15
+    statusText.Font = Enum.Font.GothamMedium
+    statusText.TextXAlignment = Enum.TextXAlignment.Left
+    statusText.Parent = toggleFrame
+
+    local toggleBtn = Instance.new("TextButton")
+    toggleBtn.Size = UDim2.new(0, 50, 0, 26)
+    toggleBtn.Position = UDim2.new(0.6, 0, 0.5, -13)
+    toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    toggleBtn.BorderSizePixel = 0
+    toggleBtn.Text = ""
+    toggleBtn.Parent = toggleFrame
+
+    local toggleCorner2 = Instance.new("UICorner")
+    toggleCorner2.CornerRadius = UDim.new(1, 0)
+    toggleCorner2.Parent = toggleBtn
+
+    local circle = Instance.new("Frame")
+    circle.Size = UDim2.new(0, 20, 0, 20)
+    circle.Position = UDim2.new(0, 3, 0.5, -10)
+    circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    circle.BorderSizePixel = 0
+    circle.Parent = toggleBtn
+
+    local circleCorner = Instance.new("UICorner")
+    circleCorner.CornerRadius = UDim.new(1, 0)
+    circleCorner.Parent = circle
+
+    local desc = Instance.new("TextLabel")
+    desc.Size = UDim2.new(0.8, 0, 0, 28)
+    desc.Position = UDim2.new(0.05, 0, 0.6, 0)
+    desc.BackgroundTransparency = 1
+    desc.Text = "Hiển thị khung xanh và tên người chơi"
+    desc.TextColor3 = Color3.fromRGB(150, 150, 150)
+    desc.TextSize = 12
+    desc.Font = Enum.Font.GothamMedium
+    desc.TextXAlignment = Enum.TextXAlignment.Left
+    desc.Parent = contentFrame
+
+    toggleBtn.MouseButton1Click:Connect(toggleESP)
+end
+
+-- === XỬ LÝ CHUYỂN TAB ===
+btnAntiAFK.MouseButton1Click:Connect(function()
+    btnAntiAFK.BackgroundTransparency = 0.5
+    btnESP.BackgroundTransparency = 0.85
+    createAntiAFKContent()
+end)
+
+btnESP.MouseButton1Click:Connect(function()
+    btnESP.BackgroundTransparency = 0.5
+    btnAntiAFK.BackgroundTransparency = 0.85
+    createESPContent()
+end)
+
+-- Mặc định hiển thị Anti AFK
 createAntiAFKContent()
 
--- === NÚT MỞ LẠI (AVATAR BO TRÒN) ===
+-- === NÚT MỞ LẠI ===
 local btnRestore = Instance.new("ImageButton")
 btnRestore.Size = UDim2.new(0, 55, 0, 55)
 btnRestore.Position = UDim2.new(0.05, 0, 0.05, 0)
@@ -333,7 +564,6 @@ btnRestore.Image = "rbxassetid://90447015543102"
 btnRestore.Visible = false
 btnRestore.Parent = gui
 
--- Bo tròn nút Restore
 local restoreCorner = Instance.new("UICorner")
 restoreCorner.CornerRadius = UDim.new(1, 0)
 restoreCorner.Parent = btnRestore
