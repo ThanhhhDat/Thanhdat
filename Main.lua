@@ -1,4 +1,4 @@
--- Azly Mizi Hub - Anti AFK (An toàn, dùng ImageId avatar, nút + thành avatar)
+-- Azly Mizi Hub - Anti AFK + Avatar góc trái trên (ImageId: 90447015543102)
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "AzlyMiziHub"
@@ -7,53 +7,11 @@ gui.ResetOnSpawn = false
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 
 local FRAME_W = 450
 local FRAME_H = 380
 
--- ===== HÀM ANTI AFK AN TOÀN (KHÔNG NHẢY) =====
-local function safeAntiAFK()
-    -- Phương pháp 1: Gửi tín hiệu qua VirtualUser (an toàn nhất)
-    local success, err = pcall(function()
-        local vu = game:GetService("VirtualUser")
-        if vu then
-            vu:CaptureController()
-            vu:ClickButton2(Vector2.new())
-        end
-    end)
-    
-    -- Phương pháp 2: Di chuyển camera cực nhỏ (nếu VirtualUser không có)
-    if not success then
-        pcall(function()
-            local camera = workspace.CurrentCamera
-            if camera then
-                local cf = camera.CFrame
-                camera.CFrame = cf + Vector3.new(0.001, 0, 0)
-                task.wait(0.05)
-                camera.CFrame = cf
-            end
-        end)
-    end
-    
-    -- Phương pháp 3: Gửi tín hiệu di chuyển (không thay đổi vị trí thực)
-    pcall(function()
-        local char = player.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            local root = char.HumanoidRootPart
-            local pos = root.Position
-            -- Tạo tín hiệu di chuyển ảo
-            local v = Instance.new("Vector3Value")
-            v.Value = Vector3.new(0.001, 0, 0)
-            root:SetAttribute("AntiAFK_"..tostring(os.time()), 1)
-            task.wait(0.05)
-            root:SetAttribute("AntiAFK_"..tostring(os.time()), 0)
-        end
-    end)
-end
-
--- ===== XÂY DỰNG UI =====
+-- === MAIN FRAME ===
 local main = Instance.new("Frame")
 main.Size = UDim2.new(0, FRAME_W, 0, FRAME_H)
 main.Position = UDim2.new(0.5, -FRAME_W/2, 0.5, -FRAME_H/2)
@@ -208,6 +166,7 @@ local function createAntiAFKContent()
         child:Destroy()
     end
 
+    -- Tiêu đề
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, -10, 0, 30)
     label.Position = UDim2.new(0, 5, 0, 5)
@@ -219,32 +178,33 @@ local function createAntiAFKContent()
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = contentFrame
 
-    -- === AVATAR (GÓC TRÁI TRÊN) ===
+    -- === AVATAR GÓC TRÁI TRÊN CÙNG ===
     local avatarFrame = Instance.new("Frame")
-    avatarFrame.Size = UDim2.new(0, 60, 0, 60)
-    avatarFrame.Position = UDim2.new(0, 5, 0, 40)
+    avatarFrame.Size = UDim2.new(0, 65, 0, 65)
+    avatarFrame.Position = UDim2.new(0, 5, 0, 35)  -- Sát mép trái, dưới tiêu đề
     avatarFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     avatarFrame.BorderSizePixel = 2
     avatarFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
     avatarFrame.Parent = contentFrame
 
+    -- Bo tròn avatar
     local avatarCorner = Instance.new("UICorner")
     avatarCorner.CornerRadius = UDim.new(1, 0)
     avatarCorner.Parent = avatarFrame
 
-    -- Dùng ImageId (không cần URL)
+    -- ImageLabel hiển thị avatar với ID mới
     local avatarImage = Instance.new("ImageLabel")
     avatarImage.Size = UDim2.new(1, 0, 1, 0)
     avatarImage.Position = UDim2.new(0, 0, 0, 0)
     avatarImage.BackgroundTransparency = 1
-    avatarImage.Image = "rbxassetid://128627839278272"
+    avatarImage.Image = "rbxassetid://90447015543102"
     avatarImage.ScaleType = Enum.ScaleType.Fit
     avatarImage.Parent = avatarFrame
 
-    -- === TOGGLE ===
+    -- === TOGGLE (bên phải avatar) ===
     local toggleFrame = Instance.new("Frame")
-    toggleFrame.Size = UDim2.new(0.5, 0, 0, 40)
-    toggleFrame.Position = UDim2.new(0.42, 0, 0.2, 0)
+    toggleFrame.Size = UDim2.new(0.45, 0, 0, 40)
+    toggleFrame.Position = UDim2.new(0.40, 0, 0.2, 0)
     toggleFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     toggleFrame.BorderSizePixel = 1
     toggleFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
@@ -288,6 +248,7 @@ local function createAntiAFKContent()
     circleCorner.CornerRadius = UDim.new(1, 0)
     circleCorner.Parent = circle
 
+    -- Mô tả
     local desc = Instance.new("TextLabel")
     desc.Size = UDim2.new(0.8, 0, 0, 30)
     desc.Position = UDim2.new(0.05, 0, 0.6, 0)
@@ -303,19 +264,25 @@ local function createAntiAFKContent()
     local isOn = false
     local antiAFKRunning = false
     local antiAFKThread = nil
-    local lastRunTime = 0
-    local minInterval = 270 -- 4.5 phút
 
-    local function safeAFKLoop()
-        while antiAFKRunning do
-            local currentTime = tick()
-            if currentTime - lastRunTime >= minInterval then
-                safeAntiAFK()
-                lastRunTime = currentTime
-                print("Anti AFK: Đã gửi tín hiệu giữ kết nối")
+    -- Hàm Anti AFK an toàn (không nhảy)
+    local function safeAntiAFK()
+        pcall(function()
+            local vu = game:GetService("VirtualUser")
+            if vu then
+                vu:CaptureController()
+                vu:ClickButton2(Vector2.new())
             end
-            task.wait(10) -- Kiểm tra mỗi 10 giây
-        end
+        end)
+        pcall(function()
+            local camera = workspace.CurrentCamera
+            if camera then
+                local cf = camera.CFrame
+                camera.CFrame = cf + Vector3.new(0.001, 0, 0)
+                task.wait(0.05)
+                camera.CFrame = cf
+            end
+        end)
     end
 
     local function toggleAntiAFK()
@@ -328,8 +295,15 @@ local function createAntiAFKContent()
             circle.Position = UDim2.new(0, 27, 0.5, -10)
 
             antiAFKRunning = true
-            lastRunTime = tick() - minInterval -- Chạy ngay lập tức
-            antiAFKThread = coroutine.create(safeAFKLoop)
+            antiAFKThread = coroutine.create(function()
+                while antiAFKRunning do
+                    safeAntiAFK()
+                    for i = 1, 300 do
+                        if not antiAFKRunning then break end
+                        task.wait(1)
+                    end
+                end
+            end)
             coroutine.resume(antiAFKThread)
             print("Anti AFK đã bật (an toàn)")
 
@@ -355,13 +329,13 @@ createAntiAFKContent()
 
 -- === NÚT MỞ LẠI (DÙNG AVATAR THAY DẤU +) ===
 local btnRestore = Instance.new("ImageButton")
-btnRestore.Size = UDim2.new(0, 50, 0, 50)
-btnRestore.Position = UDim2.new(0.05, 0, 0.05, 0)
+btnRestore.Size = UDim2.new(0, 55, 0, 55)
+btnRestore.Position = UDim2.new(0.1, 0, 0.1, 0)
 btnRestore.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 btnRestore.BackgroundTransparency = 0
 btnRestore.BorderSizePixel = 2
 btnRestore.BorderColor3 = Color3.fromRGB(255, 255, 255)
-btnRestore.Image = "rbxassetid://128627839278272"
+btnRestore.Image = "rbxassetid://90447015543102"
 btnRestore.Visible = false
 btnRestore.Parent = gui
 
@@ -370,7 +344,7 @@ local restoreCorner = Instance.new("UICorner")
 restoreCorner.CornerRadius = UDim.new(1, 0)
 restoreCorner.Parent = btnRestore
 
--- Thêm viền sáng cho avatar
+-- Viền sáng
 local restoreStroke = Instance.new("UIStroke")
 restoreStroke.Color = Color3.fromRGB(255, 255, 255)
 restoreStroke.Thickness = 2
