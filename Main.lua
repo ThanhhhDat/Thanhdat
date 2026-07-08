@@ -1,4 +1,4 @@
--- Azly Mizi Hub - Avatar bo tròn hoàn hảo, góc trái trên cùng
+-- Azly Mizi Hub - Avatar bo tròn (hình tròn) - góc trái trên cùng
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "AzlyMiziHub"
@@ -31,7 +31,7 @@ local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 12)
 corner.Parent = main
 
--- === AVATAR BO TRÒN HOÀN HẢO - GÓC TRÁI TRÊN CÙNG ===
+-- === AVATAR BO TRÒN (HÌNH TRÒN) - GÓC TRÁI TRÊN ===
 local avatarFrame = Instance.new("Frame")
 avatarFrame.Size = UDim2.new(0, 55, 0, 55)
 avatarFrame.Position = UDim2.new(0, 8, 0, 8)
@@ -40,7 +40,7 @@ avatarFrame.BorderSizePixel = 2
 avatarFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
 avatarFrame.Parent = main
 
--- Bo tròn hoàn hảo (hình tròn)
+-- BO TRÒN HOÀN TOÀN (1,0 = 100% bo tròn)
 local avatarCorner = Instance.new("UICorner")
 avatarCorner.CornerRadius = UDim.new(1, 0)
 avatarCorner.Parent = avatarFrame
