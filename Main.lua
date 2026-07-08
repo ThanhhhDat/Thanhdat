@@ -1,4 +1,4 @@
--- Azly Mizi Hub - Anti AFK + ESP (khung xanh, tên, khoảng cách)
+-- Azly Mizi Hub - Anti AFK + ESP (khung xanh, tên + @)
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "AzlyMiziHub"
@@ -226,21 +226,22 @@ local function createESP(playerObj)
     box.Adornee = root
     box.Parent = gui
     
-    -- Tên
+    -- Tên hiển thị (có @)
     local nameLabel = Instance.new("BillboardGui")
-    nameLabel.Size = UDim2.new(0, 100, 0, 20)
-    nameLabel.StudsOffset = Vector3.new(0, 3, 0)
+    nameLabel.Size = UDim2.new(0, 150, 0, 25)
+    nameLabel.StudsOffset = Vector3.new(0, 3.5, 0)
     nameLabel.AlwaysOnTop = true
     nameLabel.Parent = gui
     
     local nameText = Instance.new("TextLabel")
     nameText.Size = UDim2.new(1, 0, 1, 0)
     nameText.BackgroundTransparency = 1
-    nameText.Text = playerObj.Name
+    nameText.Text = "@" .. playerObj.Name
     nameText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    nameText.TextSize = 12
+    nameText.TextSize = 13
     nameText.Font = Enum.Font.GothamBold
-    nameText.TextStrokeTransparency = 0.5
+    nameText.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    nameText.TextStrokeTransparency = 0.3
     nameText.Parent = nameLabel
     
     -- Khoảng cách
@@ -532,7 +533,23 @@ local function createESPContent()
     desc.TextXAlignment = Enum.TextXAlignment.Left
     desc.Parent = contentFrame
 
-    toggleBtn.MouseButton1Click:Connect(toggleESP)
+    -- Sự kiện toggle ESP (đúng cách)
+    toggleBtn.MouseButton1Click:Connect(function()
+        espEnabled = not espEnabled
+        if espEnabled then
+            statusText.Text = "Bật"
+            statusText.TextColor3 = Color3.fromRGB(100, 255, 150)
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+            circle.Position = UDim2.new(0, 27, 0.5, -10)
+            toggleESP() -- Gọi hàm bật
+        else
+            statusText.Text = "Tắt"
+            statusText.TextColor3 = Color3.fromRGB(200, 200, 200)
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+            circle.Position = UDim2.new(0, 3, 0.5, -10)
+            toggleESP() -- Gọi hàm tắt
+        end
+    end)
 end
 
 -- === XỬ LÝ CHUYỂN TAB ===
