@@ -1,4 +1,4 @@
--- Azly Mizi Hub - Avatar bo tròn, sát mép trên, đúng vị trí
+-- Azly Mizi Hub - Avatar bo tròn hoàn hảo, góc trái trên cùng
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "AzlyMiziHub"
@@ -31,21 +31,21 @@ local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 12)
 corner.Parent = main
 
--- === AVATAR BO TRÒN - GÓC TRÁI TRÊN CÙNG, SÁT MÉP ===
+-- === AVATAR BO TRÒN HOÀN HẢO - GÓC TRÁI TRÊN CÙNG ===
 local avatarFrame = Instance.new("Frame")
 avatarFrame.Size = UDim2.new(0, 55, 0, 55)
-avatarFrame.Position = UDim2.new(0, 8, 0, 8)  -- Sát mép trái và trên
+avatarFrame.Position = UDim2.new(0, 8, 0, 8)
 avatarFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 avatarFrame.BorderSizePixel = 2
 avatarFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
 avatarFrame.Parent = main
 
--- BO TRÒN HOÀN TOÀN (quan trọng: CornerRadius = 1,0)
+-- Bo tròn hoàn hảo (hình tròn)
 local avatarCorner = Instance.new("UICorner")
 avatarCorner.CornerRadius = UDim.new(1, 0)
 avatarCorner.Parent = avatarFrame
 
--- ImageLabel
+-- Avatar Image
 local avatarImage = Instance.new("ImageLabel")
 avatarImage.Size = UDim2.new(1, 0, 1, 0)
 avatarImage.Position = UDim2.new(0, 0, 0, 0)
@@ -334,7 +334,7 @@ btnRestore.Image = "rbxassetid://90447015543102"
 btnRestore.Visible = false
 btnRestore.Parent = gui
 
--- BO TRÒN CHO NÚT RESTORE
+-- Bo tròn nút Restore
 local restoreCorner = Instance.new("UICorner")
 restoreCorner.CornerRadius = UDim.new(1, 0)
 restoreCorner.Parent = btnRestore
