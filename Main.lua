@@ -1,4 +1,4 @@
--- Azly Mizi Hub - Anti AFK + ESP (khung xanh cho người chơi)
+-- Azly Mizi Hub - Anti AFK + ESP (khung xanh, tên, khoảng cách)
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "AzlyMiziHub"
@@ -10,7 +10,7 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
-local FRAME_W = 460
+local FRAME_W = 480
 local FRAME_H = 380
 
 -- === MAIN FRAME ===
@@ -216,10 +216,10 @@ local function createESP(playerObj)
     local root = character:FindFirstChild("HumanoidRootPart")
     if not root then return end
     
-    -- Tạo khung
+    -- Khung xanh
     local box = Instance.new("BoxHandleAdornment")
     box.Size = Vector3.new(3, 5, 2)
-    box.Color3 = Color3.fromRGB(0, 255, 0) -- Xanh lá
+    box.Color3 = Color3.fromRGB(0, 255, 0)
     box.Transparency = 0.5
     box.ZIndex = 0
     box.AlwaysOnTop = true
@@ -259,7 +259,6 @@ local function createESP(playerObj)
     distText.Font = Enum.Font.GothamMedium
     distText.Parent = distLabel
     
-    -- Lưu vào bảng
     espBoxes[playerObj] = {box = box, name = nameLabel, dist = distLabel}
     
     -- Cập nhật khoảng cách
@@ -526,7 +525,7 @@ local function createESPContent()
     desc.Size = UDim2.new(0.8, 0, 0, 28)
     desc.Position = UDim2.new(0.05, 0, 0.6, 0)
     desc.BackgroundTransparency = 1
-    desc.Text = "Hiển thị khung xanh và tên người chơi"
+    desc.Text = "Hiển thị khung xanh, tên và khoảng cách"
     desc.TextColor3 = Color3.fromRGB(150, 150, 150)
     desc.TextSize = 12
     desc.Font = Enum.Font.GothamMedium
