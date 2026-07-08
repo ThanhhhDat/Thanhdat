@@ -1,4 +1,4 @@
--- Azly Mizi Hub - Anti AFK + Avatar bo tròn góc trái trên cùng
+-- Azly Mizi Hub - Avatar góc trái trên MAIN FRAME, bo tròn, nút + = avatar
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "AzlyMiziHub"
@@ -31,10 +31,33 @@ local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 12)
 corner.Parent = main
 
--- === NÚT THU NHỎ ===
+-- === AVATAR - ĐẶT GÓC TRÁI TRÊN CÙNG CỦA MAIN FRAME ===
+local avatarFrame = Instance.new("Frame")
+avatarFrame.Size = UDim2.new(0, 60, 0, 60)
+avatarFrame.Position = UDim2.new(0, 8, 0, 50)  -- Sát mép trái, dưới tiêu đề một chút
+avatarFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+avatarFrame.BorderSizePixel = 2
+avatarFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+avatarFrame.Parent = main
+
+-- Bo tròn avatar
+local avatarCorner = Instance.new("UICorner")
+avatarCorner.CornerRadius = UDim.new(1, 0)
+avatarCorner.Parent = avatarFrame
+
+-- ImageLabel hiển thị avatar
+local avatarImage = Instance.new("ImageLabel")
+avatarImage.Size = UDim2.new(1, 0, 1, 0)
+avatarImage.Position = UDim2.new(0, 0, 0, 0)
+avatarImage.BackgroundTransparency = 1
+avatarImage.Image = "rbxassetid://90447015543102"
+avatarImage.ScaleType = Enum.ScaleType.Fit
+avatarImage.Parent = avatarFrame
+
+-- === NÚT THU NHỎ (dấu -) ===
 local btnMinimize = Instance.new("TextButton")
 btnMinimize.Size = UDim2.new(0, 30, 0, 30)
-btnMinimize.Position = UDim2.new(1, -36, 0, 6)
+btnMinimize.Position = UDim2.new(1, -36, 0, 8)
 btnMinimize.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 btnMinimize.BorderSizePixel = 0
 btnMinimize.Text = "−"
@@ -50,7 +73,7 @@ minCorner.Parent = btnMinimize
 -- === TIÊU ĐỀ ===
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -50, 0, 40)
-title.Position = UDim2.new(0, 0, 0, 6)
+title.Position = UDim2.new(0, 0, 0, 8)
 title.BackgroundTransparency = 1
 title.Text = "Azly Mizi Hub"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -63,7 +86,7 @@ title.Parent = main
 -- === STATUS + THANH TIẾN TRÌNH ===
 local statusFrame = Instance.new("Frame")
 statusFrame.Size = UDim2.new(0.85, 0, 0, 55)
-statusFrame.Position = UDim2.new(0.075, 0, 0.25, 0)
+statusFrame.Position = UDim2.new(0.075, 0, 0.30, 0)
 statusFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 statusFrame.BorderSizePixel = 0
 statusFrame.BackgroundTransparency = 0
@@ -108,8 +131,8 @@ progressFillCorner.Parent = progressFill
 
 -- === MENU CHÍNH ===
 local menuFrame = Instance.new("Frame")
-menuFrame.Size = UDim2.new(0.96, 0, 0.65, 0)
-menuFrame.Position = UDim2.new(0.02, 0, 0.34, 0)
+menuFrame.Size = UDim2.new(0.96, 0, 0.55, 0)
+menuFrame.Position = UDim2.new(0.02, 0, 0.42, 0)
 menuFrame.BackgroundTransparency = 1
 menuFrame.Visible = false
 menuFrame.Parent = main
@@ -166,45 +189,22 @@ local function createAntiAFKContent()
         child:Destroy()
     end
 
-    -- === AVATAR - ĐẶT Ở GÓC TRÁI TRÊN CÙNG CỦA CONTENT FRAME ===
-    local avatarFrame = Instance.new("Frame")
-    avatarFrame.Size = UDim2.new(0, 70, 0, 70)
-    avatarFrame.Position = UDim2.new(0, 5, 0, 5)  -- Sát mép trái và sát mép trên
-    avatarFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    avatarFrame.BorderSizePixel = 2
-    avatarFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
-    avatarFrame.Parent = contentFrame
-
-    -- Bo tròn avatar
-    local avatarCorner = Instance.new("UICorner")
-    avatarCorner.CornerRadius = UDim.new(1, 0)
-    avatarCorner.Parent = avatarFrame
-
-    -- ImageLabel hiển thị avatar
-    local avatarImage = Instance.new("ImageLabel")
-    avatarImage.Size = UDim2.new(1, 0, 1, 0)
-    avatarImage.Position = UDim2.new(0, 0, 0, 0)
-    avatarImage.BackgroundTransparency = 1
-    avatarImage.Image = "rbxassetid://90447015543102"
-    avatarImage.ScaleType = Enum.ScaleType.Fit
-    avatarImage.Parent = avatarFrame
-
-    -- === TIÊU ĐỀ "Anti AFK" (nằm bên phải avatar) ===
+    -- Tiêu đề nhỏ
     local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(0.6, 0, 0, 30)
-    label.Position = UDim2.new(0.35, 0, 0, 10)
+    label.Size = UDim2.new(1, -10, 0, 30)
+    label.Position = UDim2.new(0, 5, 0, 5)
     label.BackgroundTransparency = 1
-    label.Text = "Anti AFK"
+    label.Text = "Chế độ Anti AFK"
     label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.TextSize = 20
+    label.TextSize = 16
     label.Font = Enum.Font.GothamBold
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = contentFrame
 
-    -- === TOGGLE (bên phải avatar, dưới tiêu đề) ===
+    -- Toggle
     local toggleFrame = Instance.new("Frame")
-    toggleFrame.Size = UDim2.new(0.4, 0, 0, 40)
-    toggleFrame.Position = UDim2.new(0.35, 0, 0.3, 0)
+    toggleFrame.Size = UDim2.new(0.8, 0, 0, 40)
+    toggleFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
     toggleFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     toggleFrame.BorderSizePixel = 1
     toggleFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
@@ -251,7 +251,7 @@ local function createAntiAFKContent()
     -- Mô tả
     local desc = Instance.new("TextLabel")
     desc.Size = UDim2.new(0.8, 0, 0, 30)
-    desc.Position = UDim2.new(0.05, 0, 0.6, 0)
+    desc.Position = UDim2.new(0.05, 0, 0.65, 0)
     desc.BackgroundTransparency = 1
     desc.Text = "Giữ kết nối mỗi 5 phút (an toàn)"
     desc.TextColor3 = Color3.fromRGB(150, 150, 150)
@@ -265,7 +265,6 @@ local function createAntiAFKContent()
     local antiAFKRunning = false
     local antiAFKThread = nil
 
-    -- Hàm Anti AFK an toàn
     local function safeAntiAFK()
         pcall(function()
             local vu = game:GetService("VirtualUser")
@@ -306,7 +305,6 @@ local function createAntiAFKContent()
             end)
             coroutine.resume(antiAFKThread)
             print("Anti AFK đã bật (an toàn)")
-
         else
             statusText.Text = "Tắt"
             statusText.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -330,7 +328,7 @@ createAntiAFKContent()
 -- === NÚT MỞ LẠI (DÙNG AVATAR BO TRÒN) ===
 local btnRestore = Instance.new("ImageButton")
 btnRestore.Size = UDim2.new(0, 55, 0, 55)
-btnRestore.Position = UDim2.new(0.1, 0, 0.1, 0)
+btnRestore.Position = UDim2.new(0.05, 0, 0.05, 0)
 btnRestore.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 btnRestore.BackgroundTransparency = 0
 btnRestore.BorderSizePixel = 2
@@ -339,7 +337,7 @@ btnRestore.Image = "rbxassetid://90447015543102"
 btnRestore.Visible = false
 btnRestore.Parent = gui
 
--- Bo tròn nút restore
+-- Bo tròn
 local restoreCorner = Instance.new("UICorner")
 restoreCorner.CornerRadius = UDim.new(1, 0)
 restoreCorner.Parent = btnRestore
@@ -350,7 +348,7 @@ restoreStroke.Color = Color3.fromRGB(255, 255, 255)
 restoreStroke.Thickness = 2
 restoreStroke.Parent = btnRestore
 
--- Kéo thả nút Restore
+-- Kéo thả
 local dragRestore = false
 local dragStartRestore = nil
 local startPosRestore = nil
