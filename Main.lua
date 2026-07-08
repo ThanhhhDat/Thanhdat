@@ -31,16 +31,16 @@ local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 12)
 corner.Parent = main
 
--- === AVATAR BO TRÒN (HÌNH TRÒN) - GÓC TRÁI TRÊN ===
+-- === AVATAR BO TRÒN (HÌNH TRÒN HOÀN HẢO) ===
 local avatarFrame = Instance.new("Frame")
 avatarFrame.Size = UDim2.new(0, 55, 0, 55)
-avatarFrame.Position = UDim2.new(0, 8, 0, 8)
+avatarFrame.Position = UDim2.new(0, 8, 0, 8)  -- Sát góc trái trên
 avatarFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 avatarFrame.BorderSizePixel = 2
 avatarFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
 avatarFrame.Parent = main
 
--- BO TRÒN HOÀN TOÀN (1,0 = 100% bo tròn)
+-- BO TRÒN HOÀN TOÀN (CornerRadius = 1,0)
 local avatarCorner = Instance.new("UICorner")
 avatarCorner.CornerRadius = UDim.new(1, 0)
 avatarCorner.Parent = avatarFrame
