@@ -1,4 +1,4 @@
--- Azly Mizi Hub - Avatar bo tròn (hình tròn) - góc trái trên cùng
+-- Azly Mizi Hub - Avatar bo tròn (hình tròn), nút + bo tròn, góc trái trên
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "AzlyMiziHub"
@@ -8,8 +8,8 @@ gui.ResetOnSpawn = false
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
-local FRAME_W = 450
-local FRAME_H = 330
+local FRAME_W = 460
+local FRAME_H = 340
 
 -- === MAIN FRAME ===
 local main = Instance.new("Frame")
@@ -31,21 +31,20 @@ local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 12)
 corner.Parent = main
 
--- === AVATAR BO TRÒN (HÌNH TRÒN HOÀN HẢO) ===
+-- === AVATAR BO TRÒN - GÓC TRÁI TRÊN CÙNG ===
 local avatarFrame = Instance.new("Frame")
 avatarFrame.Size = UDim2.new(0, 55, 0, 55)
-avatarFrame.Position = UDim2.new(0, 8, 0, 8)  -- Sát góc trái trên
+avatarFrame.Position = UDim2.new(0, 10, 0, 10)  -- Sát mép trái và trên
 avatarFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 avatarFrame.BorderSizePixel = 2
 avatarFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
 avatarFrame.Parent = main
 
--- BO TRÒN HOÀN TOÀN (CornerRadius = 1,0)
+-- Bo tròn hoàn toàn (hình tròn)
 local avatarCorner = Instance.new("UICorner")
 avatarCorner.CornerRadius = UDim.new(1, 0)
 avatarCorner.Parent = avatarFrame
 
--- Avatar Image
 local avatarImage = Instance.new("ImageLabel")
 avatarImage.Size = UDim2.new(1, 0, 1, 0)
 avatarImage.Position = UDim2.new(0, 0, 0, 0)
@@ -57,7 +56,7 @@ avatarImage.Parent = avatarFrame
 -- === NÚT THU NHỎ ===
 local btnMinimize = Instance.new("TextButton")
 btnMinimize.Size = UDim2.new(0, 28, 0, 28)
-btnMinimize.Position = UDim2.new(1, -34, 0, 8)
+btnMinimize.Position = UDim2.new(1, -34, 0, 10)
 btnMinimize.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 btnMinimize.BorderSizePixel = 0
 btnMinimize.Text = "−"
@@ -73,7 +72,7 @@ minCorner.Parent = btnMinimize
 -- === TIÊU ĐỀ ===
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -80, 0, 35)
-title.Position = UDim2.new(0, 0, 0, 8)
+title.Position = UDim2.new(0, 0, 0, 10)
 title.BackgroundTransparency = 1
 title.Text = "Azly Mizi Hub"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -86,7 +85,7 @@ title.Parent = main
 -- === STATUS + THANH TIẾN TRÌNH ===
 local statusFrame = Instance.new("Frame")
 statusFrame.Size = UDim2.new(0.85, 0, 0, 45)
-statusFrame.Position = UDim2.new(0.075, 0, 0.26, 0)
+statusFrame.Position = UDim2.new(0.075, 0, 0.28, 0)
 statusFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 statusFrame.BorderSizePixel = 0
 statusFrame.BackgroundTransparency = 0
@@ -131,7 +130,7 @@ progressFillCorner.Parent = progressFill
 
 -- === MENU CHÍNH ===
 local menuFrame = Instance.new("Frame")
-menuFrame.Size = UDim2.new(0.96, 0, 0.55, 0)
+menuFrame.Size = UDim2.new(0.96, 0, 0.58, 0)
 menuFrame.Position = UDim2.new(0.02, 0, 0.38, 0)
 menuFrame.BackgroundTransparency = 1
 menuFrame.Visible = false
