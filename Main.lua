@@ -287,38 +287,57 @@ local function createESP(playerObj)
     table.insert(espConnections, conn)
 end
 
--- === HÀM BẬT/TẮT ESP ===
-local function toggleESP()
-    espEnabled = not espEnabled
+-- === HÀM BẬT ESP ===
+local function enableESP()
+    if espEnabled then return end
+    espEnabled = true
     
-    if espEnabled then
-        -- Tạo ESP mới
-        for _, p in ipairs(Players:GetPlayers()) do
-            createESP(p)
-        end
-        
-        -- Kết nối khi người chơi mới vào
-        local newConn = Players.PlayerAdded:Connect(function(p)
-            task.wait(0.5)
-            createESP(p)
-        end)
-        table.insert(espConnections, newConn)
-        
-        print("ESP đã bật")
-    else
-        -- Xóa tất cả ESP
-        for _, data in pairs(espBoxes) do
-            if data.box then data.box:Destroy() end
-            if data.name then data.name:Destroy() end
-            if data.dist then data.dist:Destroy() end
-        end
-        espBoxes = {}
-        for _, conn in ipairs(espConnections) do
-            conn:Disconnect()
-        end
-        espConnections = {}
-        print("ESP đã tắt")
+    -- Tạo ESP cho tất cả người chơi hiện tại
+    for _, p in ipairs(Players:GetPlayers()) do
+        createESP(p)
     end
+    
+    -- Kết nối khi người chơi mới vào
+    local newConn = Players.PlayerAdded:Connect(function(p)
+        task.wait(0.5)
+        createESP(p)
+    end)
+    table.insert(espConnections, newConn)
+    
+    -- Kết nối khi người chơi rời
+    local leaveConn = Players.PlayerRemoving:Connect(function(p)
+        if espBoxes[p] then
+            if espBoxes[p].box then espBoxes[p].box:Destroy() end
+            if espBoxes[p].name then espBoxes[p].name:Destroy() end
+            if espBoxes[p].dist then espBoxes[p].dist:Destroy() end
+            espBoxes[p] = nil
+        end
+    end)
+    table.insert(espConnections, leaveConn)
+    
+    print("ESP đã bật")
+end
+
+-- === HÀM TẮT ESP ===
+local function disableESP()
+    if not espEnabled then return end
+    espEnabled = false
+    
+    -- Xóa tất cả ESP
+    for _, data in pairs(espBoxes) do
+        if data.box then data.box:Destroy() end
+        if data.name then data.name:Destroy() end
+        if data.dist then data.dist:Destroy() end
+    end
+    espBoxes = {}
+    
+    -- Ngắt tất cả kết nối
+    for _, conn in ipairs(espConnections) do
+        conn:Disconnect()
+    end
+    espConnections = {}
+    
+    print("ESP đã tắt")
 end
 
 -- === TẠO NỘI DUNG CHO TỪNG TAB ===
@@ -527,41 +546,24 @@ local function createESPContent()
     desc.TextXAlignment = Enum.TextXAlignment.Left
     desc.Parent = contentFrame
 
-    -- Sự kiện toggle ESP (đúng cách, không gọi toggleESP bên ngoài)
+    -- Sự kiện toggle ESP (dùng enable/disable riêng)
     toggleBtn.MouseButton1Click:Connect(function()
-        espEnabled = not espEnabled
         if espEnabled then
-            statusText.Text = "Bật"
-            statusText.TextColor3 = Color3.fromRGB(100, 255, 150)
-            toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
-            circle.Position = UDim2.new(0, 27, 0.5, -10)
-            -- Bật ESP (không gọi toggleESP bên ngoài)
-            for _, p in ipairs(Players:GetPlayers()) do
-                createESP(p)
-            end
-            local newConn = Players.PlayerAdded:Connect(function(p)
-                task.wait(0.5)
-                createESP(p)
-            end)
-            table.insert(espConnections, newConn)
-            print("ESP đã bật")
-        else
+            -- Đang bật -> tắt
+            espEnabled = false
             statusText.Text = "Tắt"
             statusText.TextColor3 = Color3.fromRGB(200, 200, 200)
             toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
             circle.Position = UDim2.new(0, 3, 0.5, -10)
-            -- Tắt ESP
-            for _, data in pairs(espBoxes) do
-                if data.box then data.box:Destroy() end
-                if data.name then data.name:Destroy() end
-                if data.dist then data.dist:Destroy() end
-            end
-            espBoxes = {}
-            for _, conn in ipairs(espConnections) do
-                conn:Disconnect()
-            end
-            espConnections = {}
-            print("ESP đã tắt")
+            disableESP()
+        else
+            -- Đang tắt -> bật
+            espEnabled = true
+            statusText.Text = "Bật"
+            statusText.TextColor3 = Color3.fromRGB(100, 255, 150)
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+            circle.Position = UDim2.new(0, 27, 0.5, -10)
+            enableESP()
         end
     end)
 end
