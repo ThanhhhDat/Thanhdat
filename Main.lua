@@ -1,4 +1,4 @@
--- Azly Mizi Hub - Anti AFK + ESP (khung xanh, tên + @)
+-- Azly Mizi Hub - Anti AFK + ESP (khung xanh, tên + @ trên đầu)
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "AzlyMiziHub"
@@ -216,6 +216,9 @@ local function createESP(playerObj)
     local root = character:FindFirstChild("HumanoidRootPart")
     if not root then return end
     
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+    
     -- Khung xanh
     local box = Instance.new("BoxHandleAdornment")
     box.Size = Vector3.new(3, 5, 2)
@@ -226,30 +229,32 @@ local function createESP(playerObj)
     box.Adornee = root
     box.Parent = gui
     
-    -- Tên hiển thị (có @)
+    -- Tên hiển thị (có @) - gắn vào Head
     local nameLabel = Instance.new("BillboardGui")
-    nameLabel.Size = UDim2.new(0, 150, 0, 25)
-    nameLabel.StudsOffset = Vector3.new(0, 3.5, 0)
+    nameLabel.Size = UDim2.new(0, 200, 0, 30)
+    nameLabel.StudsOffset = Vector3.new(0, 2.5, 0)
     nameLabel.AlwaysOnTop = true
-    nameLabel.Parent = gui
+    nameLabel.MaxDistance = 200
+    nameLabel.Parent = head  -- Gắn vào Head
     
     local nameText = Instance.new("TextLabel")
     nameText.Size = UDim2.new(1, 0, 1, 0)
     nameText.BackgroundTransparency = 1
     nameText.Text = "@" .. playerObj.Name
     nameText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    nameText.TextSize = 13
+    nameText.TextSize = 14
     nameText.Font = Enum.Font.GothamBold
     nameText.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
     nameText.TextStrokeTransparency = 0.3
     nameText.Parent = nameLabel
     
-    -- Khoảng cách
+    -- Khoảng cách - gắn vào Head
     local distLabel = Instance.new("BillboardGui")
     distLabel.Size = UDim2.new(0, 80, 0, 15)
-    distLabel.StudsOffset = Vector3.new(0, -2, 0)
+    distLabel.StudsOffset = Vector3.new(0, -1.5, 0)
     distLabel.AlwaysOnTop = true
-    distLabel.Parent = gui
+    distLabel.MaxDistance = 200
+    distLabel.Parent = head  -- Gắn vào Head
     
     local distText = Instance.new("TextLabel")
     distText.Size = UDim2.new(1, 0, 1, 0)
@@ -260,7 +265,7 @@ local function createESP(playerObj)
     distText.Font = Enum.Font.GothamMedium
     distText.Parent = distLabel
     
-    espBoxes[playerObj] = {box = box, name = nameLabel, dist = distLabel}
+    espBoxes[playerObj] = {box = box, name = nameLabel, dist = distLabel, head = head}
     
     -- Cập nhật khoảng cách
     local conn
