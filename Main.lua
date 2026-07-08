@@ -1,4 +1,4 @@
--- Azly Mizi Hub - Anti AFK + Avatar góc trái trên (ImageId: 90447015543102)
+-- Azly Mizi Hub - Anti AFK + Avatar bo tròn góc trái trên cùng
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "AzlyMiziHub"
@@ -166,22 +166,10 @@ local function createAntiAFKContent()
         child:Destroy()
     end
 
-    -- Tiêu đề
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -10, 0, 30)
-    label.Position = UDim2.new(0, 5, 0, 5)
-    label.BackgroundTransparency = 1
-    label.Text = "Anti AFK"
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.TextSize = 18
-    label.Font = Enum.Font.GothamBold
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = contentFrame
-
-    -- === AVATAR GÓC TRÁI TRÊN CÙNG ===
+    -- === AVATAR - ĐẶT Ở GÓC TRÁI TRÊN CÙNG CỦA CONTENT FRAME ===
     local avatarFrame = Instance.new("Frame")
-    avatarFrame.Size = UDim2.new(0, 65, 0, 65)
-    avatarFrame.Position = UDim2.new(0, 5, 0, 35)  -- Sát mép trái, dưới tiêu đề
+    avatarFrame.Size = UDim2.new(0, 70, 0, 70)
+    avatarFrame.Position = UDim2.new(0, 5, 0, 5)  -- Sát mép trái và sát mép trên
     avatarFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     avatarFrame.BorderSizePixel = 2
     avatarFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
@@ -192,7 +180,7 @@ local function createAntiAFKContent()
     avatarCorner.CornerRadius = UDim.new(1, 0)
     avatarCorner.Parent = avatarFrame
 
-    -- ImageLabel hiển thị avatar với ID mới
+    -- ImageLabel hiển thị avatar
     local avatarImage = Instance.new("ImageLabel")
     avatarImage.Size = UDim2.new(1, 0, 1, 0)
     avatarImage.Position = UDim2.new(0, 0, 0, 0)
@@ -201,10 +189,22 @@ local function createAntiAFKContent()
     avatarImage.ScaleType = Enum.ScaleType.Fit
     avatarImage.Parent = avatarFrame
 
-    -- === TOGGLE (bên phải avatar) ===
+    -- === TIÊU ĐỀ "Anti AFK" (nằm bên phải avatar) ===
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0.6, 0, 0, 30)
+    label.Position = UDim2.new(0.35, 0, 0, 10)
+    label.BackgroundTransparency = 1
+    label.Text = "Anti AFK"
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextSize = 20
+    label.Font = Enum.Font.GothamBold
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = contentFrame
+
+    -- === TOGGLE (bên phải avatar, dưới tiêu đề) ===
     local toggleFrame = Instance.new("Frame")
-    toggleFrame.Size = UDim2.new(0.45, 0, 0, 40)
-    toggleFrame.Position = UDim2.new(0.40, 0, 0.2, 0)
+    toggleFrame.Size = UDim2.new(0.4, 0, 0, 40)
+    toggleFrame.Position = UDim2.new(0.35, 0, 0.3, 0)
     toggleFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     toggleFrame.BorderSizePixel = 1
     toggleFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
@@ -265,7 +265,7 @@ local function createAntiAFKContent()
     local antiAFKRunning = false
     local antiAFKThread = nil
 
-    -- Hàm Anti AFK an toàn (không nhảy)
+    -- Hàm Anti AFK an toàn
     local function safeAntiAFK()
         pcall(function()
             local vu = game:GetService("VirtualUser")
@@ -327,7 +327,7 @@ end
 
 createAntiAFKContent()
 
--- === NÚT MỞ LẠI (DÙNG AVATAR THAY DẤU +) ===
+-- === NÚT MỞ LẠI (DÙNG AVATAR BO TRÒN) ===
 local btnRestore = Instance.new("ImageButton")
 btnRestore.Size = UDim2.new(0, 55, 0, 55)
 btnRestore.Position = UDim2.new(0.1, 0, 0.1, 0)
@@ -339,7 +339,7 @@ btnRestore.Image = "rbxassetid://90447015543102"
 btnRestore.Visible = false
 btnRestore.Parent = gui
 
--- Bo tròn avatar
+-- Bo tròn nút restore
 local restoreCorner = Instance.new("UICorner")
 restoreCorner.CornerRadius = UDim.new(1, 0)
 restoreCorner.Parent = btnRestore
