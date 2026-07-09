@@ -1,4 +1,4 @@
--- Azly Mizi Hub - Grow A Garden 2 (UI chuẩn, tự động tìm Remote)
+-- Azly Mizi Hub - Grow A Garden 2 (Dùng UI game thay vì RemoteEvent)
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "AzlyMiziHub"
@@ -7,80 +7,66 @@ gui.ResetOnSpawn = false
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local FRAME_W = 520
 local FRAME_H = 480
 
--- ===== TÌM REMOTEEVENT =====
-local ShopRemote = nil
-local HarvestRemote = nil
-
--- Duyệt toàn bộ ReplicatedStorage
-for _, obj in ipairs(ReplicatedStorage:GetDescendants()) do
-    if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
-        local name = obj.Name:lower()
-        if not ShopRemote and (name:find("shop") or name:find("buy") or name:find("purchase") or name:find("store")) then
-            ShopRemote = obj
-        end
-        if not HarvestRemote and (name:find("harvest") or name:find("collect") or name:find("fruit") or name:find("pick")) then
-            HarvestRemote = obj
-        end
-    end
-end
-
--- Nếu chưa tìm thấy, thử tìm trong Workspace và ServerScriptService
-if not ShopRemote or not HarvestRemote then
-    for _, service in ipairs({workspace, game:GetService("ServerScriptService")}) do
-        for _, obj in ipairs(service:GetDescendants()) do
-            if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
-                local name = obj.Name:lower()
-                if not ShopRemote and (name:find("shop") or name:find("buy") or name:find("purchase")) then
-                    ShopRemote = obj
-                end
-                if not HarvestRemote and (name:find("harvest") or name:find("collect") or name:find("fruit")) then
-                    HarvestRemote = obj
-                end
+-- ===== HÀM TÌM UI BUTTON =====
+local function findUIButton(itemName, shopType)
+    -- Tìm shop UI
+    local shopUI = player.PlayerGui:FindFirstChild("Shop")
+    if not shopUI then return nil end
+    
+    -- Tìm button theo tên
+    for _, child in ipairs(shopUI:GetDescendants()) do
+        if child:IsA("TextButton") and child.Visible then
+            local text = child.Text or ""
+            -- Nếu text khớp với itemName (không phân biệt hoa thường)
+            if text:lower():find(itemName:lower()) then
+                return child
             end
         end
     end
+    return nil
 end
 
-print("ShopRemote:", ShopRemote and ShopRemote.Name or "KHÔNG TÌM THẤY")
-print("HarvestRemote:", HarvestRemote and HarvestRemote.Name or "KHÔNG TÌM THẤY")
-
--- ===== HÀM MUA =====
-local function buyItem(itemType, itemName, amount)
-    if not ShopRemote then
-        return false, "Không tìm thấy ShopRemote"
+-- ===== HÀM MUA (Dùng bấm nút) =====
+local function buyItemViaUI(itemName, shopType)
+    local btn = findUIButton(itemName, shopType)
+    if not btn then
+        return false, "Không tìm thấy nút mua " .. itemName
     end
-    amount = amount or 1
+    
+    -- Mô phỏng click
     local success, err = pcall(function()
-        ShopRemote:FireServer("Buy" .. itemType, itemName, amount)
-        ShopRemote:FireServer(itemType, itemName, amount)
-        ShopRemote:FireServer("Purchase", itemType, itemName, amount)
-        ShopRemote:FireServer(itemName, amount)
+        btn:FireEvent("MouseButton1Click")
+        -- Hoặc: btn:Click()
     end)
     return success, err
 end
 
--- ===== HÀM HÁI =====
-local function harvestFruit(fruitName)
-    if not HarvestRemote then
-        return false, "Không tìm thấy HarvestRemote"
-    end
-    local success, err = pcall(function()
-        HarvestRemote:FireServer("Harvest", fruitName)
-        HarvestRemote:FireServer(fruitName)
-        HarvestRemote:FireServer("Collect", fruitName)
-    end)
-    return success, err
-end
-
--- ===== DANH SÁCH =====
-local SEEDS = {"Carrot","Strawberry","Bamboo","Blueberry","Tulip","Apple","Tomato","Banana","Sunflower","Corn","Mushroom","Cherry","Mango","Grape","Coconut","Cactus","Baby Cactus","Pomegranate","Pineapple","Dragon Fruit","Green Bean","Acorn","Poison Apple","Moon Bloom","Poison Ivy","Ghost Pepper","Venus Fly Trap","Venom Spitter","Hypno Bloom","Dragon's Breath","Buttercup","Pumpkin","Beanstalk","Thorn Rose","Lotus","Romanesco","Glow Mushroom","Horned Melon","Briar Rose","Fire Fern","Rocket Pop","Mega","Gold","Rainbow"}
-local GEARS = {"Common Watering Can","Common Sprinkler","Sign","Megaphone","Uncommon Sprinkler","Rare Sprinkler","Legendary Sprinkler","Wheelbarrow","Strawberry Sniper","Super Sprinkler","Trowel","Speed Mushroom","Jump Mushroom","Gnome","Shrink Mushroom","Supersize Mushroom","Invisibility Mushroom","Super Watering Can","Basic Pot","Flashbang","Player Magnet","Teleporter","Legendary Pet Teleporter"}
-local PETS = {"IceSerpent","Raccoon","Unicorn","GoldenDragonfly","BlackDragon","Monkey","Bee","Robin","Deer","Owl","Bunny","Frog","Butterfly","BaldEagle","Bear","Turtle"}
+-- ===== DANH SÁCH VẬT PHẨM =====
+local SEEDS = {
+    "Carrot","Strawberry","Bamboo","Blueberry","Tulip","Apple","Tomato","Banana",
+    "Sunflower","Corn","Mushroom","Cherry","Mango","Grape","Coconut","Cactus",
+    "Baby Cactus","Pomegranate","Pineapple","Dragon Fruit","Green Bean","Acorn",
+    "Poison Apple","Moon Bloom","Poison Ivy","Ghost Pepper","Venus Fly Trap",
+    "Venom Spitter","Hypno Bloom","Dragon's Breath","Buttercup","Pumpkin",
+    "Beanstalk","Thorn Rose","Lotus","Romanesco","Glow Mushroom","Horned Melon",
+    "Briar Rose","Fire Fern","Rocket Pop","Mega","Gold","Rainbow"
+}
+local GEARS = {
+    "Common Watering Can","Common Sprinkler","Sign","Megaphone","Uncommon Sprinkler",
+    "Rare Sprinkler","Legendary Sprinkler","Wheelbarrow","Strawberry Sniper",
+    "Super Sprinkler","Trowel","Speed Mushroom","Jump Mushroom","Gnome",
+    "Shrink Mushroom","Supersize Mushroom","Invisibility Mushroom",
+    "Super Watering Can","Basic Pot","Flashbang","Player Magnet",
+    "Teleporter","Legendary Pet Teleporter"
+}
+local PETS = {
+    "IceSerpent","Raccoon","Unicorn","GoldenDragonfly","BlackDragon","Monkey",
+    "Bee","Robin","Deer","Owl","Bunny","Frog","Butterfly","BaldEagle","Bear","Turtle"
+}
 local CRATES = {"Basic Crate","Rare Crate","Legendary Crate","Mystery Crate","Ladder Crate","Picture Frame Crate"}
 
 -- ===== MAIN FRAME =====
@@ -205,7 +191,7 @@ menuFrame.BackgroundTransparency = 1
 menuFrame.Visible = false
 menuFrame.Parent = main
 
--- Cột trái: Tab
+-- Tab List
 local tabList = Instance.new("ScrollingFrame")
 tabList.Size = UDim2.new(0.3, 0, 1, 0)
 tabList.Position = UDim2.new(0, 0, 0, 0)
@@ -220,7 +206,7 @@ local tabCorner = Instance.new("UICorner")
 tabCorner.CornerRadius = UDim.new(0, 6)
 tabCorner.Parent = tabList
 
--- Cột phải: Nội dung
+-- Content Frame
 local contentFrame = Instance.new("Frame")
 contentFrame.Size = UDim2.new(0.68, 0, 1, 0)
 contentFrame.Position = UDim2.new(0.30, 0, 0, 0)
@@ -241,7 +227,6 @@ local tabs = {
     {name = "Mua Gear", id = "buygear"},
     {name = "Mua Crate", id = "buycrate"},
     {name = "Mua Pet", id = "buypet"},
-    {name = "Hái trái", id = "harvest"}
 }
 
 local tabButtons = {}
@@ -326,7 +311,7 @@ local function toggleESP()
     end
 end
 
--- ===== TẠO NỘI DUNG =====
+-- ===== TẠO NỘI DUNG MUA =====
 local function createBuyContent(title, itemList)
     for _, c in ipairs(contentFrame:GetChildren()) do c:Destroy() end
     
@@ -400,9 +385,9 @@ local function createBuyContent(title, itemList)
     buyBtn.Position = UDim2.new(0.05, 0, 0.55, 0)
     buyBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
     buyBtn.BorderSizePixel = 0
-    buyBtn.Text = "Mua"
+    buyBtn.Text = "Mua (UI)"
     buyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    buyBtn.TextSize = 15
+    buyBtn.TextSize = 14
     buyBtn.Font = Enum.Font.GothamBold
     buyBtn.Parent = contentFrame
     
@@ -429,108 +414,13 @@ local function createBuyContent(title, itemList)
         end
         local amount = tonumber(amountBox.Text) or 1
         if amount < 1 then amount = 1
-        resultLabel.Text = "Đang mua..."
+        resultLabel.Text = "Đang mua " .. selected .. "..."
         resultLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-        local success, err = buyItem(title:gsub("Mua ",""), selected, amount)
-        if success then
-            resultLabel.Text = "Đã mua " .. amount .. " " .. selected
-            resultLabel.TextColor3 = Color3.fromRGB(100, 255, 150)
-        else
-            resultLabel.Text = "Lỗi: " .. tostring(err)
-            resultLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-        end
-    end)
-end
-
-local function createHarvestContent()
-    for _, c in ipairs(contentFrame:GetChildren()) do c:Destroy() end
-    
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -10, 0, 30)
-    label.Position = UDim2.new(0, 5, 0, 5)
-    label.BackgroundTransparency = 1
-    label.Text = "Hái trái"
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.TextSize = 16
-    label.Font = Enum.Font.GothamBold
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = contentFrame
-    
-    local dropdown = Instance.new("ScrollingFrame")
-    dropdown.Size = UDim2.new(0.9, 0, 0, 90)
-    dropdown.Position = UDim2.new(0.05, 0, 0.15, 0)
-    dropdown.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    dropdown.BorderSizePixel = 1
-    dropdown.BorderColor3 = Color3.fromRGB(255, 255, 255)
-    dropdown.ScrollBarThickness = 3
-    dropdown.CanvasSize = UDim2.new(0, 0, 0, #SEEDS * 24)
-    dropdown.Parent = contentFrame
-    
-    local dropCorner = Instance.new("UICorner")
-    dropCorner.CornerRadius = UDim.new(0, 4)
-    dropCorner.Parent = dropdown
-    
-    local selected = nil
-    local selectedBtn = nil
-    
-    for i, item in ipairs(SEEDS) do
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(0.96, 0, 0, 22)
-        btn.Position = UDim2.new(0.02, 0, 0, (i-1)*24)
-        btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-        btn.BorderSizePixel = 0
-        btn.Text = item
-        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        btn.TextSize = 12
-        btn.Font = Enum.Font.GothamMedium
-        btn.TextXAlignment = Enum.TextXAlignment.Left
-        btn.Parent = dropdown
         
-        btn.MouseButton1Click:Connect(function()
-            if selectedBtn then selectedBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35) end
-            selected = item
-            selectedBtn = btn
-            btn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
-        end)
-    end
-    
-    local harvestBtn = Instance.new("TextButton")
-    harvestBtn.Size = UDim2.new(0.3, 0, 0, 32)
-    harvestBtn.Position = UDim2.new(0.05, 0, 0.42, 0)
-    harvestBtn.BackgroundColor3 = Color3.fromRGB(200, 150, 0)
-    harvestBtn.BorderSizePixel = 0
-    harvestBtn.Text = "Hái"
-    harvestBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    harvestBtn.TextSize = 15
-    harvestBtn.Font = Enum.Font.GothamBold
-    harvestBtn.Parent = contentFrame
-    
-    local harvestCorner = Instance.new("UICorner")
-    harvestCorner.CornerRadius = UDim.new(0, 4)
-    harvestCorner.Parent = harvestBtn
-    
-    local resultLabel = Instance.new("TextLabel")
-    resultLabel.Size = UDim2.new(0.9, 0, 0, 25)
-    resultLabel.Position = UDim2.new(0.05, 0, 0.6, 0)
-    resultLabel.BackgroundTransparency = 1
-    resultLabel.Text = ""
-    resultLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    resultLabel.TextSize = 12
-    resultLabel.Font = Enum.Font.GothamMedium
-    resultLabel.TextXAlignment = Enum.TextXAlignment.Left
-    resultLabel.Parent = contentFrame
-    
-    harvestBtn.MouseButton1Click:Connect(function()
-        if not selected then
-            resultLabel.Text = "Vui lòng chọn trái"
-            resultLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
-            return
-        end
-        resultLabel.Text = "Đang hái..."
-        resultLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-        local success, err = harvestFruit(selected)
+        -- Gọi hàm mua qua UI
+        local success, err = buyItemViaUI(selected, title)
         if success then
-            resultLabel.Text = "Đã hái: " .. selected
+            resultLabel.Text = "Đã mua " .. selected .. " (kiểm tra game)"
             resultLabel.TextColor3 = Color3.fromRGB(100, 255, 150)
         else
             resultLabel.Text = "Lỗi: " .. tostring(err)
@@ -539,6 +429,7 @@ local function createHarvestContent()
     end)
 end
 
+-- ===== TẠO NỘI DUNG ANTI AFK =====
 local function createAntiAFK()
     for _, c in ipairs(contentFrame:GetChildren()) do c:Destroy() end
     local label = Instance.new("TextLabel")
@@ -648,6 +539,7 @@ local function createAntiAFK()
     end)
 end
 
+-- ===== TẠO NỘI DUNG ESP =====
 local function createESPContent()
     for _, c in ipairs(contentFrame:GetChildren()) do c:Destroy() end
     
@@ -747,7 +639,6 @@ local function switchTab(id)
     elseif id == "buygear" then createBuyContent("Mua Gear", GEARS)
     elseif id == "buycrate" then createBuyContent("Mua Crate", CRATES)
     elseif id == "buypet" then createBuyContent("Mua Pet", PETS)
-    elseif id == "harvest" then createHarvestContent()
     end
 end
 
@@ -910,6 +801,4 @@ end
 
 task.spawn(startLoading)
 
-print("Azly Mizi Hub đã tải!")
-print("ShopRemote:", ShopRemote and ShopRemote.Name or "KHÔNG TÌM THẤY")
-print("HarvestRemote:", HarvestRemote and HarvestRemote.Name or "KHÔNG TÌM THẤY")
+print("Azly Mizi Hub đã tải (bản UI) - Vui lòng mở Shop trong game để mua hàng!")
