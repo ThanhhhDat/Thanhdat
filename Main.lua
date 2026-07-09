@@ -1,4 +1,4 @@
--- Azly Mizi Hub - Anti AFK + ESP + Mua Seed/Gear/Crate + Hái trái
+-- Azly Mizi Hub - Grow A Garden 2 (Game ID: 97598239454123)
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "AzlyMiziHub"
@@ -14,68 +14,92 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local FRAME_W = 540
 local FRAME_H = 480
 
--- ===== DANH SÁCH ITEM =====
-local ITEMS = {
-    Seed = {
-        "Carrot", "Strawberry", "Bamboo", "Blueberry", "Tulip", "Apple", "Tomato", "Banana",
-        "Sunflower", "Corn", "Mushroom", "Cherry", "Mango", "Grape", "Coconut", "Cactus",
-        "Baby Cactus", "Pomegranate", "Pineapple", "Dragon Fruit", "Green Bean", "Acorn",
-        "Poison Apple", "Moon Bloom", "Poison Ivy", "Ghost Pepper", "Venus Fly Trap",
-        "Venom Spitter", "Hypno Bloom", "Dragon's Breath", "Buttercup", "Pumpkin",
-        "Beanstalk", "Thorn Rose", "Lotus", "Romanesco", "Glow Mushroom", "Horned Melon",
-        "Briar Rose", "Fire Fern", "Rocket Pop", "Mega", "Gold", "Rainbow"
-    },
-    Pet = {
-        "IceSerpent", "Raccoon", "Unicorn", "GoldenDragonfly", "BlackDragon", "Monkey",
-        "Bee", "Robin", "Deer", "Owl", "Bunny", "Frog", "Butterfly", "BaldEagle", "Bear", "Turtle"
-    },
-    Gear = {
-        "Common Watering Can", "Common Sprinkler", "Sign", "Megaphone", "Uncommon Sprinkler",
-        "Rare Sprinkler", "Legendary Sprinkler", "Wheelbarrow", "Strawberry Sniper",
-        "Super Sprinkler", "Trowel", "Speed Mushroom", "Jump Mushroom", "Gnome",
-        "Shrink Mushroom", "Supersize Mushroom", "Invisibility Mushroom",
-        "Super Watering Can", "Basic Pot", "Flashbang", "Player Magnet",
-        "Teleporter", "Legendary Pet Teleporter"
-    },
-    Crate = {
-        "Basic Crate", "Rare Crate", "Legendary Crate", "Mystery Crate"
-    }
-}
-
--- ===== TÌM REMOTEEVENT =====
+-- ===== TÌM REMOTEEVENT ĐÚNG CÁCH =====
 local ShopRemote = nil
 local HarvestRemote = nil
+local PetRemote = nil
 
-for _, service in ipairs({ReplicatedStorage, workspace, player}) do
-    for _, obj in ipairs(service:GetDescendants()) do
-        if obj:IsA("RemoteEvent") then
-            local name = obj.Name:lower()
-            if not ShopRemote and (name:find("shop") or name:find("buy") or name:find("purchase")) then
-                ShopRemote = obj
-            end
-            if not HarvestRemote and (name:find("harvest") or name:find("collect") or name:find("fruit")) then
-                HarvestRemote = obj
+-- Tìm trong tất cả service
+local function findRemote(patterns)
+    for _, service in ipairs({ReplicatedStorage, workspace, game:GetService("ServerScriptService")}) do
+        for _, obj in ipairs(service:GetDescendants()) do
+            if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
+                local name = obj.Name:lower()
+                for _, pattern in ipairs(patterns) do
+                    if name:find(pattern) then
+                        return obj
+                    end
+                end
             end
         end
     end
+    return nil
 end
 
--- ===== HÀM MUA HÀNG =====
+ShopRemote = findRemote({"shop", "buy", "purchase", "store"})
+HarvestRemote = findRemote({"harvest", "collect", "fruit", "pick"})
+PetRemote = findRemote({"pet", "tame", "animal"})
+
+-- In ra để debug
+print("ShopRemote:", ShopRemote and ShopRemote.Name or "Không tìm thấy")
+print("HarvestRemote:", HarvestRemote and HarvestRemote.Name or "Không tìm thấy")
+print("PetRemote:", PetRemote and PetRemote.Name or "Không tìm thấy")
+
+-- ===== DANH SÁCH ITEM =====
+local SEED_LIST = {
+    "Carrot", "Strawberry", "Bamboo", "Blueberry", "Tulip", "Apple", "Tomato", "Banana",
+    "Sunflower", "Corn", "Mushroom", "Cherry", "Mango", "Grape", "Coconut", "Cactus",
+    "Baby Cactus", "Pomegranate", "Pineapple", "Dragon Fruit", "Green Bean", "Acorn",
+    "Poison Apple", "Moon Bloom", "Poison Ivy", "Ghost Pepper", "Venus Fly Trap",
+    "Venom Spitter", "Hypno Bloom", "Dragon's Breath", "Buttercup", "Pumpkin",
+    "Beanstalk", "Thorn Rose", "Lotus", "Romanesco", "Glow Mushroom", "Horned Melon",
+    "Briar Rose", "Fire Fern", "Rocket Pop", "Mega", "Gold", "Rainbow"
+}
+
+local GEAR_LIST = {
+    "Common Watering Can", "Common Sprinkler", "Sign", "Megaphone", "Uncommon Sprinkler",
+    "Rare Sprinkler", "Legendary Sprinkler", "Wheelbarrow", "Strawberry Sniper",
+    "Super Sprinkler", "Trowel", "Speed Mushroom", "Jump Mushroom", "Gnome",
+    "Shrink Mushroom", "Supersize Mushroom", "Invisibility Mushroom",
+    "Super Watering Can", "Basic Pot", "Flashbang", "Player Magnet",
+    "Teleporter", "Legendary Pet Teleporter"
+}
+
+local PET_LIST = {
+    "IceSerpent", "Raccoon", "Unicorn", "GoldenDragonfly", "BlackDragon", "Monkey",
+    "Bee", "Robin", "Deer", "Owl", "Bunny", "Frog", "Butterfly", "BaldEagle", "Bear", "Turtle"
+}
+
+local CRATE_LIST = {"Basic Crate", "Rare Crate", "Legendary Crate", "Mystery Crate"}
+
+-- ===== HÀM MUA HÀNG (THỬ NHIỀU CÁCH) =====
 local function buyItem(itemType, itemName, amount)
     if not ShopRemote then
-        warn("Không tìm thấy RemoteEvent mua hàng")
-        return false, "Không tìm thấy RemoteEvent"
+        return false, "Không tìm thấy ShopRemote"
     end
     amount = amount or 1
+    
     local success, err = pcall(function()
-        -- Thử nhiều cách gọi
-        ShopRemote:FireServer("Buy" .. itemType, itemName, amount)
-        ShopRemote:FireServer(itemType, itemName, amount)
-        ShopRemote:FireServer({Type = itemType, Name = itemName, Amount = amount})
-        ShopRemote:FireServer("Purchase", itemType, itemName, amount)
+        -- Thử tất cả cách gọi có thể
+        local methods = {
+            function() ShopRemote:FireServer("Buy" .. itemType, itemName, amount) end,
+            function() ShopRemote:FireServer(itemType, itemName, amount) end,
+            function() ShopRemote:FireServer("Purchase", itemType, itemName, amount) end,
+            function() ShopRemote:FireServer({Type = itemType, Name = itemName, Amount = amount}) end,
+            function() ShopRemote:FireServer(itemName, amount) end,
+            function() ShopRemote:FireServer("Buy", itemName, amount) end,
+        }
+        
+        for _, method in ipairs(methods) do
+            local s, e = pcall(method)
+            if s then
+                print("Mua thành công với cách:", method)
+                return
+            end
+        end
     end)
+    
     if success then
-        print("Đã mua " .. amount .. " " .. itemName .. " (" .. itemType .. ")")
         return true, "Thành công"
     else
         return false, tostring(err)
@@ -85,16 +109,26 @@ end
 -- ===== HÀM HÁI TRÁI =====
 local function harvestFruit(fruitName)
     if not HarvestRemote then
-        warn("Không tìm thấy RemoteEvent hái trái")
-        return false, "Không tìm thấy RemoteEvent"
+        return false, "Không tìm thấy HarvestRemote"
     end
+    
     local success, err = pcall(function()
-        HarvestRemote:FireServer("Harvest", fruitName)
-        HarvestRemote:FireServer(fruitName)
-        HarvestRemote:FireServer("Collect", fruitName)
+        local methods = {
+            function() HarvestRemote:FireServer("Harvest", fruitName) end,
+            function() HarvestRemote:FireServer(fruitName) end,
+            function() HarvestRemote:FireServer("Collect", fruitName) end,
+            function() HarvestRemote:FireServer("Pick", fruitName) end,
+        }
+        for _, method in ipairs(methods) do
+            local s, e = pcall(method)
+            if s then
+                print("Hái thành công:", fruitName)
+                return
+            end
+        end
     end)
+    
     if success then
-        print("Đã hái: " .. fruitName)
         return true, "Thành công"
     else
         return false, tostring(err)
@@ -171,7 +205,7 @@ title.TextXAlignment = Enum.TextXAlignment.Center
 title.TextYAlignment = Enum.TextYAlignment.Bottom
 title.Parent = main
 
--- === STATUS + THANH TIẾN TRÌNH ===
+-- === STATUS ===
 local statusFrame = Instance.new("Frame")
 statusFrame.Size = UDim2.new(0.85, 0, 0, 45)
 statusFrame.Position = UDim2.new(0.075, 0, 0.25, 0)
@@ -217,7 +251,7 @@ local progressFillCorner = Instance.new("UICorner")
 progressFillCorner.CornerRadius = UDim.new(1, 0)
 progressFillCorner.Parent = progressFill
 
--- === MENU CHÍNH ===
+-- === MENU ===
 local menuFrame = Instance.new("Frame")
 menuFrame.Size = UDim2.new(0.96, 0, 0.68, 0)
 menuFrame.Position = UDim2.new(0.02, 0, 0.34, 0)
@@ -225,7 +259,6 @@ menuFrame.BackgroundTransparency = 1
 menuFrame.Visible = false
 menuFrame.Parent = main
 
--- Cột trái: Tab
 local tabList = Instance.new("ScrollingFrame")
 tabList.Size = UDim2.new(0.28, 0, 1, 0)
 tabList.Position = UDim2.new(0, 0, 0, 0)
@@ -233,14 +266,13 @@ tabList.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 tabList.BackgroundTransparency = 0
 tabList.BorderSizePixel = 0
 tabList.ScrollBarThickness = 3
-tabList.CanvasSize = UDim2.new(0, 0, 0, 300)
+tabList.CanvasSize = UDim2.new(0, 0, 0, 320)
 tabList.Parent = menuFrame
 
 local tabCorner = Instance.new("UICorner")
 tabCorner.CornerRadius = UDim.new(0, 6)
 tabCorner.Parent = tabList
 
--- Cột phải: Nội dung
 local contentFrame = Instance.new("Frame")
 contentFrame.Size = UDim2.new(0.68, 0, 1, 0)
 contentFrame.Position = UDim2.new(0.30, 0, 0, 0)
@@ -287,12 +319,11 @@ for i, tab in ipairs(tabs) do
 end
 tabList.CanvasSize = UDim2.new(0, 0, 0, #tabs * 32 + 10)
 
--- === BIẾN ESP ===
+-- === ESP ===
 local espEnabled = false
 local espBoxes = {}
 local espConnections = {}
 
--- === HÀM ESP ===
 local function createESP(playerObj)
     if playerObj == player then return end
     local character = playerObj.Character
@@ -402,7 +433,7 @@ local function disableESP()
     espConnections = {}
 end
 
--- === HÀM TẠO NỘI DUNG MUA HÀNG ===
+-- === HÀM TẠO NỘI DUNG MUA ===
 local function createBuyContent(itemType, itemList)
     for _, child in ipairs(contentFrame:GetChildren()) do child:Destroy() end
     
@@ -417,7 +448,6 @@ local function createBuyContent(itemType, itemList)
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = contentFrame
     
-    -- Dropdown danh sách item
     local dropdown = Instance.new("ScrollingFrame")
     dropdown.Size = UDim2.new(0.7, 0, 0, 100)
     dropdown.Position = UDim2.new(0.05, 0, 0.15, 0)
@@ -459,7 +489,6 @@ local function createBuyContent(itemType, itemList)
         end)
     end
     
-    -- Ô nhập số lượng
     local amountBox = Instance.new("TextBox")
     amountBox.Size = UDim2.new(0.3, 0, 0, 30)
     amountBox.Position = UDim2.new(0.05, 0, 0.45, 0)
@@ -477,7 +506,6 @@ local function createBuyContent(itemType, itemList)
     amountCorner.CornerRadius = UDim.new(0, 6)
     amountCorner.Parent = amountBox
     
-    -- Nút mua
     local buyBtn = Instance.new("TextButton")
     buyBtn.Size = UDim2.new(0.3, 0, 0, 35)
     buyBtn.Position = UDim2.new(0.05, 0, 0.6, 0)
@@ -493,7 +521,6 @@ local function createBuyContent(itemType, itemList)
     buyCorner.CornerRadius = UDim.new(0, 6)
     buyCorner.Parent = buyBtn
     
-    -- Label thông báo
     local resultLabel = Instance.new("TextLabel")
     resultLabel.Size = UDim2.new(0.8, 0, 0, 25)
     resultLabel.Position = UDim2.new(0.05, 0, 0.78, 0)
@@ -528,7 +555,7 @@ local function createBuyContent(itemType, itemList)
     end)
 end
 
--- === HÀM TẠO NỘI DUNG HÁI TRÁI ===
+-- === HÀM TẠO NỘI DUNG HÁI ===
 local function createHarvestContent()
     for _, child in ipairs(contentFrame:GetChildren()) do child:Destroy() end
     
@@ -543,8 +570,6 @@ local function createHarvestContent()
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = contentFrame
     
-    -- Danh sách trái
-    local fruitList = ITEMS.Seed
     local dropdown = Instance.new("ScrollingFrame")
     dropdown.Size = UDim2.new(0.7, 0, 0, 100)
     dropdown.Position = UDim2.new(0.05, 0, 0.15, 0)
@@ -552,7 +577,7 @@ local function createHarvestContent()
     dropdown.BorderSizePixel = 1
     dropdown.BorderColor3 = Color3.fromRGB(255, 255, 255)
     dropdown.ScrollBarThickness = 4
-    dropdown.CanvasSize = UDim2.new(0, 0, 0, #fruitList * 25)
+    dropdown.CanvasSize = UDim2.new(0, 0, 0, #SEED_LIST * 25)
     dropdown.Parent = contentFrame
     
     local dropCorner = Instance.new("UICorner")
@@ -562,7 +587,7 @@ local function createHarvestContent()
     local selectedFruit = nil
     local selectedBtn = nil
     
-    for i, fruit in ipairs(fruitList) do
+    for i, fruit in ipairs(SEED_LIST) do
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(0.95, 0, 0, 22)
         btn.Position = UDim2.new(0.025, 0, 0, (i-1)*25)
@@ -586,7 +611,6 @@ local function createHarvestContent()
         end)
     end
     
-    -- Nút hái
     local harvestBtn = Instance.new("TextButton")
     harvestBtn.Size = UDim2.new(0.3, 0, 0, 35)
     harvestBtn.Position = UDim2.new(0.05, 0, 0.45, 0)
@@ -602,7 +626,6 @@ local function createHarvestContent()
     harvestCorner.CornerRadius = UDim.new(0, 6)
     harvestCorner.Parent = harvestBtn
     
-    -- Label thông báo
     local resultLabel = Instance.new("TextLabel")
     resultLabel.Size = UDim2.new(0.8, 0, 0, 25)
     resultLabel.Position = UDim2.new(0.05, 0, 0.65, 0)
@@ -725,4 +748,324 @@ local function createAntiAFKContent()
                 local cf = camera.CFrame
                 camera.CFrame = cf + Vector3.new(0.001, 0, 0)
                 task.wait(0.05)
-               
+                camera.CFrame = cf
+            end
+        end)
+    end
+    
+    local function toggleAntiAFK()
+        isOn = not isOn
+        if isOn then
+            statusText.Text = "Bật"
+            statusText.TextColor3 = Color3.fromRGB(100, 255, 150)
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+            circle.Position = UDim2.new(0, 27, 0.5, -10)
+            antiAFKRunning = true
+            antiAFKThread = coroutine.create(function()
+                while antiAFKRunning do
+                    safeAntiAFK()
+                    for i = 1, 300 do
+                        if not antiAFKRunning then break end
+                        task.wait(1)
+                    end
+                end
+            end)
+            coroutine.resume(antiAFKThread)
+        else
+            statusText.Text = "Tắt"
+            statusText.TextColor3 = Color3.fromRGB(200, 200, 200)
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+            circle.Position = UDim2.new(0, 3, 0.5, -10)
+            antiAFKRunning = false
+            if antiAFKThread then
+                coroutine.close(antiAFKThread)
+                antiAFKThread = nil
+            end
+        end
+    end
+    toggleBtn.MouseButton1Click:Connect(toggleAntiAFK)
+end
+
+-- === TẠO NỘI DUNG ESP ===
+local function createESPContent()
+    for _, child in ipairs(contentFrame:GetChildren()) do child:Destroy() end
+    
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -10, 0, 28)
+    label.Position = UDim2.new(0, 5, 0, 5)
+    label.BackgroundTransparency = 1
+    label.Text = "ESP (Player ESP)"
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextSize = 16
+    label.Font = Enum.Font.GothamBold
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = contentFrame
+    
+    local toggleFrame = Instance.new("Frame")
+    toggleFrame.Size = UDim2.new(0.8, 0, 0, 38)
+    toggleFrame.Position = UDim2.new(0.05, 0, 0.22, 0)
+    toggleFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    toggleFrame.BorderSizePixel = 1
+    toggleFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+    toggleFrame.Parent = contentFrame
+    
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.CornerRadius = UDim.new(0, 6)
+    toggleCorner.Parent = toggleFrame
+    
+    local statusText = Instance.new("TextLabel")
+    statusText.Size = UDim2.new(0.4, 0, 1, 0)
+    statusText.Position = UDim2.new(0, 5, 0, 0)
+    statusText.BackgroundTransparency = 1
+    statusText.Text = "Tắt"
+    statusText.TextColor3 = Color3.fromRGB(200, 200, 200)
+    statusText.TextSize = 15
+    statusText.Font = Enum.Font.GothamMedium
+    statusText.TextXAlignment = Enum.TextXAlignment.Left
+    statusText.Parent = toggleFrame
+    
+    local toggleBtn = Instance.new("TextButton")
+    toggleBtn.Size = UDim2.new(0, 50, 0, 26)
+    toggleBtn.Position = UDim2.new(0.6, 0, 0.5, -13)
+    toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    toggleBtn.BorderSizePixel = 0
+    toggleBtn.Text = ""
+    toggleBtn.Parent = toggleFrame
+    
+    local toggleCorner2 = Instance.new("UICorner")
+    toggleCorner2.CornerRadius = UDim.new(1, 0)
+    toggleCorner2.Parent = toggleBtn
+    
+    local circle = Instance.new("Frame")
+    circle.Size = UDim2.new(0, 20, 0, 20)
+    circle.Position = UDim2.new(0, 3, 0.5, -10)
+    circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    circle.BorderSizePixel = 0
+    circle.Parent = toggleBtn
+    
+    local circleCorner = Instance.new("UICorner")
+    circleCorner.CornerRadius = UDim.new(1, 0)
+    circleCorner.Parent = circle
+    
+    local desc = Instance.new("TextLabel")
+    desc.Size = UDim2.new(0.8, 0, 0, 28)
+    desc.Position = UDim2.new(0.05, 0, 0.6, 0)
+    desc.BackgroundTransparency = 1
+    desc.Text = "Hiển thị khung xanh, tên và khoảng cách"
+    desc.TextColor3 = Color3.fromRGB(150, 150, 150)
+    desc.TextSize = 12
+    desc.Font = Enum.Font.GothamMedium
+    desc.TextXAlignment = Enum.TextXAlignment.Left
+    desc.Parent = contentFrame
+    
+    toggleBtn.MouseButton1Click:Connect(function()
+        if espEnabled then
+            espEnabled = false
+            statusText.Text = "Tắt"
+            statusText.TextColor3 = Color3.fromRGB(200, 200, 200)
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+            circle.Position = UDim2.new(0, 3, 0.5, -10)
+            disableESP()
+        else
+            espEnabled = true
+            statusText.Text = "Bật"
+            statusText.TextColor3 = Color3.fromRGB(100, 255, 150)
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+            circle.Position = UDim2.new(0, 27, 0.5, -10)
+            enableESP()
+        end
+    end)
+end
+
+-- === SWITCH TAB ===
+local function switchTab(tabId)
+    for id, btn in pairs(tabButtons) do
+        btn.BackgroundTransparency = (id == tabId) and 0.5 or 0.85
+    end
+    
+    if tabId == "antiafk" then
+        createAntiAFKContent()
+    elseif tabId == "esp" then
+        createESPContent()
+    elseif tabId == "buyseed" then
+        createBuyContent("Seed", SEED_LIST)
+    elseif tabId == "buygear" then
+        createBuyContent("Gear", GEAR_LIST)
+    elseif tabId == "buycrate" then
+        createBuyContent("Crate", CRATE_LIST)
+    elseif tabId == "buypet" then
+        createBuyContent("Pet", PET_LIST)
+    elseif tabId == "harvest" then
+        createHarvestContent()
+    end
+end
+
+for id, btn in pairs(tabButtons) do
+    btn.MouseButton1Click:Connect(function()
+        switchTab(id)
+    end)
+end
+
+switchTab("antiafk")
+
+-- === NÚT MỞ LẠI ===
+local btnRestore = Instance.new("ImageButton")
+btnRestore.Size = UDim2.new(0, 55, 0, 55)
+btnRestore.Position = UDim2.new(0.05, 0, 0.05, 0)
+btnRestore.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+btnRestore.BackgroundTransparency = 0
+btnRestore.BorderSizePixel = 2
+btnRestore.BorderColor3 = Color3.fromRGB(255, 255, 255)
+btnRestore.Image = "rbxassetid://90447015543102"
+btnRestore.Visible = false
+btnRestore.Parent = gui
+
+local restoreCorner = Instance.new("UICorner")
+restoreCorner.CornerRadius = UDim.new(1, 0)
+restoreCorner.Parent = btnRestore
+
+local restoreStroke = Instance.new("UIStroke")
+restoreStroke.Color = Color3.fromRGB(255, 255, 255)
+restoreStroke.Thickness = 2
+restoreStroke.Parent = btnRestore
+
+local dragRestore = false
+local dragStartRestore = nil
+local startPosRestore = nil
+
+btnRestore.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragRestore = true
+        dragStartRestore = input.Position
+        startPosRestore = btnRestore.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragRestore and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStartRestore
+        btnRestore.Position = UDim2.new(
+            startPosRestore.X.Scale,
+            startPosRestore.X.Offset + delta.X,
+            startPosRestore.Y.Scale,
+            startPosRestore.Y.Offset + delta.Y
+        )
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragRestore = false
+    end
+end)
+
+-- === KÉO THẢ BẢNG ===
+local dragToggle = false
+local dragStart = nil
+local startPos = nil
+
+main.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragToggle = true
+        dragStart = input.Position
+        startPos = main.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragToggle and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragToggle = false
+    end
+end)
+
+-- === ANIMATION ===
+local function fadeIn(obj)
+    obj.BackgroundTransparency = 1
+    obj.Visible = true
+    TweenService:Create(obj, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
+end
+
+local function fadeOut(obj)
+    TweenService:Create(obj, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1}):Play()
+end
+
+-- === XỬ LÝ THU NHỎ / MỞ LẠI ===
+btnMinimize.MouseButton1Click:Connect(function()
+    fadeOut(main)
+    task.wait(0.2)
+    main.Visible = false
+    btnRestore.Visible = true
+    fadeIn(btnRestore)
+end)
+
+btnRestore.MouseButton1Click:Connect(function()
+    fadeOut(btnRestore)
+    task.wait(0.2)
+    btnRestore.Visible = false
+    main.Visible = true
+    fadeIn(main)
+    if menuFrame.Visible == false and statusFrame.Visible == false then
+        menuFrame.Visible = true
+        for _, btn in pairs(tabButtons) do
+            btn.BackgroundTransparency = 1
+            task.wait(0.04)
+            fadeIn(btn)
+        end
+    end
+end)
+
+-- === XỬ LÝ TẢI ===
+local function startLoading()
+    main.Visible = true
+    fadeIn(main)
+
+    statusFrame.Visible = true
+    statusFrame.BackgroundTransparency = 0
+    menuFrame.Visible = false
+    progressFill.Size = UDim2.new(0, 0, 1, 0)
+    statusLabel.Text = "Đang tải dữ liệu..."
+    statusLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
+
+    local steps = {
+        {text = "Đang tải cấu hình...", progress = 0.2},
+        {text = "Đang kết nối server...", progress = 0.4},
+        {text = "Đang tải dữ liệu...", progress = 0.6},
+        {text = "Đang kiểm tra...", progress = 0.8},
+        {text = "Hoàn tất!", progress = 1.0}
+    }
+
+    for _, step in ipairs(steps) do
+        statusLabel.Text = step.text
+        TweenService:Create(progressFill, TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(step.progress, 0, 1, 0)}):Play()
+        task.wait(0.4)
+    end
+
+    statusLabel.TextColor3 = Color3.fromRGB(180, 255, 200)
+    statusLabel.Text = "Tải dữ liệu thành công!"
+    task.wait(0.5)
+
+    fadeOut(statusFrame)
+    task.wait(0.25)
+    statusFrame.Visible = false
+    menuFrame.Visible = true
+
+    for _, btn in pairs(tabButtons) do
+        btn.BackgroundTransparency = 1
+        task.wait(0.04)
+        fadeIn(btn)
+    end
+end
+
+task.spawn(startLoading)
+
+-- In ra để debug
+print("Azly Mizi Hub đã tải!")
+print("ShopRemote:", ShopRemote and ShopRemote.Name or "Không tìm thấy")
+print("HarvestRemote:", HarvestRemote and HarvestRemote.Name or "Không tìm thấy")
